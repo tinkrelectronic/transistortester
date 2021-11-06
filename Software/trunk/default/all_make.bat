@@ -61,8 +61,13 @@ make steril
 cd ../mega328_wei_st7565
 echo "SubDir mega328_wei_st7565"
 make steril
+cd ../mega328_MK-328
+echo "SubDir mega328_MK-328"
+make steril
 cd ../mega328_T3_T4_st7565
 echo "SubDir mega328_T3_T4_st7565"
+cd ../mega328_T4_v2_st7565
+echo "SubDir mega328_T4_v2_st7565"
 make steril
 cd ../mega328_T5_st7565
 echo "SubDir mega328_T5_st7565"
@@ -71,6 +76,12 @@ cd ../mega328_ssd1306SPI
 echo "SubDir mega328_ssd1306SPI"
 make steril
 cd ../mega328_ssd1306I2C
+echo "SubDir mega328_ssd1306I2C"
+make steril
+cd ../mega328_ssd1327SPI
+echo "SubDir mega328_ssd1306SPI"
+make steril
+cd ../mega328_ssd1327I2C
 echo "SubDir mega328_ssd1306I2C"
 make steril
 cd ../mega328_PCF8812

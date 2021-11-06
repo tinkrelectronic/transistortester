@@ -65,8 +65,9 @@ CFLAGS += -DWITH_ROTARY_SWITCH=2
 # CFLAGS += -DROTARY_2_PIN=PD2
 
 # Select your language:
-# Available languages are: LANG_BRASIL, LANG_CZECH, LANG_DUTCH, LANG_ENGLISH, LANG_GERMAN, LANG_HUNGARIAN, LANG_ITALIAN,
-#                          LANG_LITHUANIAN, LANG_POLISH, LANG_RUSSIAN , LANG_SLOVAK, LANG_SLOVENE, LANG_SPANISH, LANG_UKRAINIAN
+# Available languages are: LANG_BRASIL, LANG_CZECH, LANG_DANISH, LANG_DUTCH, LANG_ENGLISH, LANG_GERMAN, LANG_HUNGARIAN,
+#                          LANG_ITALIAN,LANG_LITHUANIAN, LANG_POLISH, LANG_RUSSIAN , LANG_SLOVAK, LANG_SLOVENE,
+#                          LANG_SPANISH, LANG_UKRAINIAN
 UI_LANGUAGE = LANG_ENGLISH
 
 # The LCD_CYRILLIC option is necessary, if you have a display with cyrillic characterset.
@@ -210,9 +211,11 @@ WITH_SamplingADC = 1
 # Option can be set only together with SamplingADC=1 and OP_MHZ=16
 #CFLAGS += -DWITH_XTAL 
 # Option WITH_UJT enables additional tests for UJT (UniJunction Transistor)
-#CFLAGS += -DWITH_UJT
+CFLAGS += -DWITH_UJT
 # Option WITH_PUT enables additional tests for PUT (Programmable Unijunction Transistor)
-#CFLAGS += -DWITH_PUT
+CFLAGS += -DWITH_PUT
+# Option FET_Idss will measure the Idss parameter for FETs, if not estimated > 40mA.
+CFLAGS += -DFET_Idss
 
 # The WITH_AUTO_REF option enables reading of internal REF-voltage to get factors for the Capacity measuring.
 CFLAGS += -DWITH_AUTO_REF
@@ -230,7 +233,7 @@ CFLAGS += -DC_H_KORR=0
 # You can set WITH_UART to 2 to enable a special mode of serial output with line number in column 1.
 # If the option is deselected, PC3 can be used as external voltage input with a
 # 10:1 resistor divider.
-#CFLAGS += -DWITH_UART
+CFLAGS += -DWITH_UART
 
 # With option TQFP_ADC6 or/and TQFP_ADC7 you can use the additional pins of the TQFP or
 # the QFN package for external analog input. You should install a 10:1 voltage dividers

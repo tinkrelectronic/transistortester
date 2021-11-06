@@ -3,7 +3,7 @@
         Configuration
 */
 #ifndef ADC_PORT
-#if ((LCD_ST_TYPE == 7565) || (LCD_ST_TYPE == 1306) || (LCD_ST_TYPE == 7108) || (LCD_ST_TYPE == 8812) || (LCD_ST_TYPE == 8814) || (LCD_ST_TYPE == 7735) || (LCD_ST_TYPE == 9163) || (LCD_ST_TYPE == 9341))
+#if ((LCD_ST_TYPE == 7565) || (LCD_ST_TYPE == 1306) || (LCD_ST_TYPE == 7108) || (LCD_ST_TYPE == 8812) || (LCD_ST_TYPE == 8814) || (LCD_ST_TYPE == 7735) || (LCD_ST_TYPE == 9163) || (LCD_ST_TYPE == 9341) || (LCD_ST_TYPE == 1327))
   #define LCD_GRAPHIC_TYPE 1
 #elif (LCD_ST_TYPE == 7920)
   #define LCD_GRAPHIC_TYPE 2
@@ -55,9 +55,13 @@
  #define PROCESSOR_TYP 644
 #elif defined(__AVR_ATmega324P__)
  #define PROCESSOR_TYP 644
+#elif defined(__AVR_ATmega324PA__)
+ #define PROCESSOR_TYP 644
 #elif defined(__AVR_ATmega644__)
  #define PROCESSOR_TYP 644
 #elif defined(__AVR_ATmega644P__)
+ #define PROCESSOR_TYP 644
+#elif defined(__AVR_ATmega644PA__)
  #define PROCESSOR_TYP 644
 #elif defined(__AVR_ATmega1284__)
  #define PROCESSOR_TYP 644
@@ -395,7 +399,7 @@
 /* Port(s) / Pins for LCD						     */
 /* ************************************************************************* */
 
-#if ((LCD_ST_TYPE == 7565) || (LCD_ST_TYPE == 1306) || (LCD_ST_TYPE == 8812) || (LCD_ST_TYPE == 8814) || (LCD_ST_TYPE == 7735) || (LCD_ST_TYPE == 9163) || (LCD_ST_TYPE == 9341))
+#if ((LCD_ST_TYPE == 7565) || (LCD_ST_TYPE == 1306) || (LCD_ST_TYPE == 8812) || (LCD_ST_TYPE == 8814) || (LCD_ST_TYPE == 7735) || (LCD_ST_TYPE == 9163) || (LCD_ST_TYPE == 9341) || (LCD_ST_TYPE == 1327))
  /* set the default INTERFACE_MODE for the ST7565 controller */
  #ifndef LCD_INTERFACE_MODE
   #define LCD_INTERFACE_MODE MODE_SPI
@@ -1057,5 +1061,5 @@ End of configuration
 #ifdef WITH_GRAPHICS
  #include "fonts/24x32_vertical_LSB.h"
 #endif
-
+// #define AUTO_LC_CAP 1  /* reread parallel capacity value for [RL] measurement */
 #endif /* not defined ADC_PORT */

@@ -28,13 +28,10 @@
 	  unsigned long n_cval;		// capacitor value of NPN B-E diode, for deselecting the parasitic Transistor
 	  int8_t n_cpre;		// capacitor prefix of NPN B-E diode
 	#endif
-	  char an_cat;			// diode is anode-cathode type
 	#ifdef WITH_GRAPHICS
 	  unsigned char options;
 	#endif
-        #ifdef SHOW_VAKDIODE
-          uint8_t vak_diode_nr;		// number of the protection diode of BJT
-        #endif
+        uint8_t vak_diode_nr;		// number of the protection diode of BJT
         union {
         uint16_t pw;
         uint8_t pb[2];
@@ -82,7 +79,11 @@
 	#ifndef INHIBIT_SLEEP_MODE
 	  // switch off unused Parts
 	 #if PROCESSOR_TYP == 644
+          #ifdef PRUSART1
 	  PRR0 = (1<<PRTWI) |  (1<<PRSPI) | (1<<PRUSART1);
+          #else
+	  PRR0 = (1<<PRTWI) |  (1<<PRSPI) ;
+          #endif
 	//  PRR1 =  (1<<PRTIM3) ;
 	 #elif PROCESSOR_TYP == 1280
 	  PRR0 = (1<<PRTWI) |  (1<<PRSPI) | (1<<PRUSART1);
@@ -215,7 +216,7 @@
 	 #if EXT_NUMERATOR <= (0xffff/U_VCC)
 	     Display_mV(Vext*EXT_NUMERATOR/EXT_DENOMINATOR,3);	// Display 3 Digits of this mV units
 	 #else
-	     Display_mV((unsigned long)Vext*EXT_NUMERATOR/EXT_DENOMINATOR,3);	// Display 3 Digits of this mV units
+             DisplayValue((unsigned long)Vext*EXT_NUMERATOR/EXT_DENOMINATOR,-3,'V',3);  // Display 3 Digits of this mV units
 	 #endif
 	     lcd_refresh();		// write the pixels to display, ST7920 only
 	     wait_about300ms();		// delay to read the Vext= message
@@ -260,7 +261,11 @@
 	  AutoCheck(0x01);			//check, if selftest should be done, full selftest without MENU
 	 #endif
 	#endif
-	  lcd_line2();			//LCD position row2, column 1
+	#if FLASHEND > 0x1fff
+          lcd_clear_line2();			//LCD position row2, column 1
+        #else
+          lcd_line2();				//LCD position row2, column 1
+        #endif
 	  lcd_MEM_string(TestRunning);		//String: testing...
 	  lcd_refresh();			// write the pixels to display, ST7920 only
 	 #ifdef WITH_UART
@@ -284,13 +289,24 @@
 	//  if(((PartFound == PART_NONE) || (PartFound == PART_RESISTOR) || (PartFound == PART_DIODE)) ) {
 	  if(PartFound == PART_NONE) {
 	     // If no part is found yet, check separate if is is a capacitor
+#ifdef DebugOut
 	     lcd_data('C');
+#endif
 	     EntladePins();		// discharge capacities
 	     //measurement of capacities in all 3 combinations
 	     ReadCapacity(TP3, TP1);
+#ifdef DebugOut
+	     lcd_data('K');
+#endif
 	#if DebugOut != 10
 	     ReadCapacity(TP3, TP2);
+#ifdef DebugOut
+	     lcd_data('K');
+#endif
 	     ReadCapacity(TP2, TP1);
+#ifdef DebugOut
+	     lcd_data('K');
+#endif
 	#endif
 	  }
 
@@ -422,36 +438,12 @@
      if(NumOfDiodes == 1) {		//single Diode
 //        lcd_MEM_string(Diode);		//"Diode: "
 #if FLASHEND > 0x1fff
-        // enough memory (>8k) to sort the pins
- #if EBC_STYLE == 321
-        // the higher test pin number is left side
-        if (diodes.Anode[0] > diodes.Cathode[0]) {
-           lcd_testpin(diodes.Anode[0]);
-           lcd_MEM_string(AnKat_str);	//"->|-"
-           lcd_testpin(diodes.Cathode[0]);
-        } else {
-           lcd_testpin(diodes.Cathode[0]);
-           lcd_MEM_string(KatAn_str);	//"-|<-"
-           lcd_testpin(diodes.Anode[0]);
-        }
- #else
-        // the higher test pin number is right side
-        if (diodes.Anode[0] < diodes.Cathode[0]) {
-           lcd_testpin(diodes.Anode[0]);
-           lcd_MEM_string(AnKat_str);	//"->|-"
-           lcd_testpin(diodes.Cathode[0]);
-        } else {
-           lcd_testpin(diodes.Cathode[0]);
-           lcd_MEM_string(KatAn_str);	//"-|<-"
-           lcd_testpin(diodes.Anode[0]);
-        }
- #endif
+        // enough memory (>8k) to sort the pins and additional Ir=
+        DiodeSymbol_withPins(0);
 	GetIr(diodes.Cathode[0],diodes.Anode[0]);	// measure and output Ir=x.xuA
 #else
         // too less memory to sort the pins
-        lcd_testpin(diodes.Anode[0]);
-        lcd_MEM_string(AnKat_str);		//"->|-"
-        lcd_testpin(diodes.Cathode[0]);
+        DiodeSymbol_withPins(0);
 #endif
         UfAusgabe(0x70);		// mark for additional resistor and output Uf= in line 2
 #ifndef SamplingADC
@@ -493,11 +485,8 @@ showdiodecap:
         lcd_data('2');
         lcd_MEM_string(Dioden);		//"diodes "
         if(diodes.Anode[0] == diodes.Anode[1]) { //Common Anode
-           lcd_testpin(diodes.Cathode[0]);
-           lcd_MEM_string(KatAn_str);	//"-|<-"
-           lcd_testpin(diodes.Anode[0]);
-           lcd_MEM_string(AnKat_str);	//"->|-"
-           lcd_testpin(diodes.Cathode[1]);
+           DiodeSymbol_CpinApin(0);	// 1-|<-2
+           DiodeSymbol_ACpin(1);	//  ->|-3
            UfAusgabe(0x01);
 #ifdef SamplingADC
            goto showdiodecap;   // double diodes are often varicap; measure capacitance of one of them
@@ -506,11 +495,8 @@ showdiodecap:
 #endif
         } 
         if(diodes.Cathode[0] == diodes.Cathode[1]) { //Common Cathode
-           lcd_testpin(diodes.Anode[0]);
-           lcd_MEM_string(AnKat_str);	//"->|-"
-	   lcd_testpin(diodes.Cathode[0]);
-           lcd_MEM_string(KatAn_str);	//"-|<-"
-           lcd_testpin(diodes.Anode[1]);
+           DiodeSymbol_ApinCpin(0);	// 1->|-2
+           DiodeSymbol_CApin(1);	//  -|<-3
            UfAusgabe(0x01);
 #ifdef SamplingADC
            goto showdiodecap;   // double diodes are often varicap; measure capacitance of one of them
@@ -568,9 +554,10 @@ showdiodecap:
      lcd_MEM_string(Bauteil);		//"Bauteil"
      lcd_MEM_string(Unknown); 		//" unbek."
      lcd_line2(); //2. row 
-     lcd_MEM_string(OrBroken); 		//"oder defekt "
      lcd_data(NumOfDiodes + '0');
+     lcd_data('*');
      lcd_MEM_string(AnKat_str);		//"->|-"
+     lcd_MEM_string(Detected);		//" detected"
      goto not_known;
      // end (PartFound == PART_DIODE)
   // ========================================
@@ -648,21 +635,17 @@ showdiodecap:
 #endif
 
     // show the protection diode of the BJT
-#ifdef SHOW_VAKDIODE
-    vak_diode_nr = 20;
-#endif
-    an_cat = 0;
-    for (ii=0; ii<NumOfDiodes; ii++) {
-			if ((diodes.Anode[ii] == _trans->b)
-					|| (diodes.Cathode[ii] == _trans->b))
-				continue;
-       // no side of the diode is connected to the base, this must be the protection diode   
+    vak_diode_nr = search_vak_diode();
+    if (vak_diode_nr < 5) {
+    // no side of the diode is connected to the base, this must be the protection diode   
 #ifdef WITH_GRAPHICS
        options = 0;
-       if (_trans->c != diodes.Anode[ii])
+       if (_trans->c != diodes.Anode[vak_diode_nr])
           options |= OPT_VREVERSE;
        lcd_update_icon_opt(bmp_vakdiode,options);	// show the protection diode right to the Icon
 #else    /* only character display, show the diode in correct direction */    
+       char an_cat;			// diode is anode-cathode type
+       an_cat = 0;
  #ifdef EBC_STYLE
   #if EBC_STYLE == 321
        // Layout with 321= style
@@ -674,8 +657,8 @@ showdiodecap:
   #endif
  #else
        // Layout with 123= style
-			an_cat = (((PartMode == PART_MODE_NPN) && (ntrans.c > ntrans.e))
-					|| ((PartMode != PART_MODE_NPN) && (ptrans.c < ptrans.e)));
+       an_cat = (((PartMode == PART_MODE_NPN) && (ntrans.c > ntrans.e))
+		|| ((PartMode != PART_MODE_NPN) && (ptrans.c < ptrans.e)));
  #endif
        if (an_cat) {
           lcd_MEM_string(AnKat_str);	//"->|-"
@@ -683,11 +666,7 @@ showdiodecap:
           lcd_MEM_string(KatAn_str);	//"-|<-"
        }
 #endif    /* !WITH_GRAPHICS */
-#ifdef SHOW_VAKDIODE
-       vak_diode_nr = ii;	// save number of protection diode for Uf=
-#endif
-       break;		// there is only one protection diode, is found
-    } /* end for ii */
+    }  /* endif vak_diode_nr < 6 */
 
 #ifdef WITH_GRAPHICS
     lcd_draw_trans_pins(-7, 16);	// show the pin numbers
@@ -762,16 +741,7 @@ showdiodecap:
 #ifdef SHOW_VAKDIODE
     if (vak_diode_nr < 5) {
        lcd_next_line_wait(0); 		// next line, wait 5s and clear line 2/4
-       if (an_cat) {
-          lcd_testpin(diodes.Anode[vak_diode_nr]);
-          lcd_MEM_string(AnKat_str);	//"->|-"
-          lcd_testpin(diodes.Cathode[vak_diode_nr]);
-       } else {
-          lcd_testpin(diodes.Cathode[vak_diode_nr]);
-          lcd_MEM_string(KatAn_str);	//"-|<-"
-          lcd_testpin(diodes.Anode[vak_diode_nr]);
-       }
-       lcd_space();
+       DiodeSymbol_withPins(vak_diode_nr);
        lcd_MEM_string(Uf_str);			//"Uf="
        mVAusgabe(vak_diode_nr);
        uart_newline();			// MAURO not verified ('D')
@@ -787,23 +757,26 @@ showdiodecap:
   // ========================================
   } else if (PartFound == PART_FET) {	/* JFET or MOSFET */
   // ========================================
-    unsigned char fetidx = 0;
 #ifdef WITH_GRAPHICS
+    unsigned char fetidx = 0;
     lcd_set_cursor(0,TEXT_RIGHT_TO_ICON);	// position behind the icon, Line 1
 #endif
     if((PartMode&P_CHANNEL) == P_CHANNEL) {
        lcd_data('P');			//P-channel
        _trans = &ptrans;
-       fetidx += 1;
+#ifdef WITH_GRAPHICS
+       fetidx = 2;
+#endif
     } else {
        lcd_data('N');			//N-channel
 //       _trans = &ntrans;	is allready selected as default
     }
     lcd_data('-');		// minus is used for JFET, D-MOS, E-MOS ...
 
-    tmp = PartMode&0x0f;
+    uint8_t part_code;
+    part_code = PartMode&0x0f;
 #ifdef WITH_GRAPHICS
-    if (tmp == PART_MODE_JFET) {
+    if (part_code == PART_MODE_JFET) {
        lcd_MEM_string(jfet_str);	//"JFET"
        lcd_big_icon(N_JFET|LCD_UPPER_LEFT);
        if (fetidx != 0) {
@@ -812,67 +785,70 @@ showdiodecap:
     } else {		// no JFET
        if ((PartMode&D_MODE) == D_MODE) {
           lcd_data('D');			// N-D or P-D
-          fetidx += 2;
+          fetidx += 1;
        } else {
           lcd_data('E');			// N-E or P-E
        }
-       if (tmp == (PART_MODE_IGBT)) {
+       if (part_code == (PART_MODE_IGBT)) {
           lcd_MEM_string(igbt_str);	//"-IGBT"
           lcd_big_icon(N_E_IGBT|LCD_UPPER_LEFT);
-          if (fetidx == 1)  lcd_update_icon(bmp_p_e_igbt);
-          if (fetidx == 2)  lcd_update_icon(bmp_n_d_igbt);
+          if (fetidx == 1)  lcd_update_icon(bmp_n_d_igbt);
+          if (fetidx == 2)  lcd_update_icon(bmp_p_e_igbt);
           if (fetidx == 3)  lcd_update_icon(bmp_p_d_igbt);
        } else {
           lcd_MEM_string(mosfet_str);	//"-MOS "
           lcd_big_icon(N_E_MOS|LCD_UPPER_LEFT);
-          if (fetidx == 1)  lcd_update_icon(bmp_p_e_mos);
-          if (fetidx == 2)  lcd_update_icon(bmp_n_d_mos);
+          if (fetidx == 1)  lcd_update_icon(bmp_n_d_mos);
+          if (fetidx == 2)  lcd_update_icon(bmp_p_e_mos);
           if (fetidx == 3)  lcd_update_icon(bmp_p_d_mos);
        }
     } /* end PART_MODE_JFET */
 #else	/* normal character display */
-    if (tmp == PART_MODE_JFET) {
+    if (part_code == PART_MODE_JFET) {
        lcd_MEM_string(jfet_str);	//"-JFET"
     } else {		// no JFET
        if ((PartMode&D_MODE) == D_MODE) {
           lcd_data('D');			// N-D or P-D
-          fetidx += 2;
        } else {
           lcd_data('E');			// N-E or P-E
        }
-       if (tmp == (PART_MODE_IGBT)) {
+       if (part_code == (PART_MODE_IGBT)) {
           lcd_MEM_string(igbt_str);	//"-IGBT"
        } else {
           lcd_MEM_string(mosfet_str);	//"-MOS "
        }
     } /* end PART_MODE_JFET */
 
-    if (tmp == PART_MODE_IGBT) {
+    if (part_code == PART_MODE_IGBT) {
        PinLayout('E','G','C'); 		//  SGD= or 123=...
+    } else if (part_code == PART_MODE_JFET) {
+       PinLayout('?','G','?'); 		//  ?G?= or 123=...
     } else {
        PinLayout('S','G','D'); 		//  SGD= or 123=...
     }
 #endif  /* WITH_GRAPHICS */
 
-    an_cat = 0;
-    if(NumOfDiodes == 1) {
+    vak_diode_nr = search_vak_diode();
+    if(vak_diode_nr < 5) {
        //MOSFET with protection diode; only with enhancement-FETs
-#ifdef EBC_STYLE
- #if EBC_STYLE == 321
-       // layout with 321= style
-       an_cat = (((PartMode&P_CHANNEL) && (ptrans.c > ptrans.e)) || ((!(PartMode&P_CHANNEL)) && (ntrans.c < ntrans.e)));
- #else
-       // Layout with SGD= style
-       an_cat = (PartMode&P_CHANNEL);	/* N or P MOS */
- #endif
-#else /* EBC_STYLE not defined */
-       // layout with 123= style
-			an_cat = (((PartMode & P_CHANNEL) && (ptrans.c < ptrans.e))
-					|| ((!(PartMode & P_CHANNEL)) && (ntrans.c > ntrans.e)));
-#endif /* end ifdef EBC_STYLE */
 
 #ifndef WITH_GRAPHICS
  #if FLASHEND <= 0x1fff
+       char an_cat;			// diode is anode-cathode type
+       an_cat = 0;
+  #ifdef EBC_STYLE
+   #if EBC_STYLE == 321
+       // layout with 321= style
+       an_cat = (((PartMode&P_CHANNEL) && (ptrans.c > ptrans.e)) || ((!(PartMode&P_CHANNEL)) && (ntrans.c < ntrans.e)));
+   #else
+       // Layout with SGD= style
+       an_cat = (PartMode&P_CHANNEL);	/* N or P MOS */
+   #endif
+  #else /* EBC_STYLE not defined */
+       // layout with 123= style
+			an_cat = (((PartMode & P_CHANNEL) && (ptrans.c < ptrans.e))
+					|| ((!(PartMode & P_CHANNEL)) && (ntrans.c > ntrans.e)));
+  #endif /* end ifdef EBC_STYLE */
        //  show diode symbol in right direction  (short form for less flash memory)
        if (an_cat) {
           lcd_data(LCD_CHAR_DIODE1);	//show Diode symbol >|
@@ -883,7 +859,7 @@ showdiodecap:
 #endif  /* not WITH_GRAPHICS */
 #ifdef WITH_GRAPHICS
        options = 0;
-       if (_trans->c != diodes.Anode[0])
+       if (_trans->c != diodes.Anode[vak_diode_nr])
           options |= OPT_VREVERSE;
        lcd_update_icon_opt(bmp_vakdiode,options);	// update Icon with protection diode
 #endif
@@ -904,21 +880,28 @@ showdiodecap:
        lcd_next_line(TEXT_RIGHT_TO_ICON);	// position text behind the icon, Line 3
        lcd_show_Cg();	// show Cg=xxxpF
  #ifdef SHOW_R_DS
-       lcd_next_line(TEXT_RIGHT_TO_ICON-1);	// position text behind the icon, Line 4
-       lcd_MEM_string(RDS_str);		// "RDS=
-       DisplayValue16(_trans->uBE,-1,LCD_CHAR_OMEGA,2);	// Drain-Source resistance
+       lcd_show_rds(TEXT_RIGHT_TO_ICON-1); 	// show RDS at column behind the icon -1
  #endif
     } else {   /* depletion mode */
- #if LCD_LINES > 6
-       lcd_next_line(TEXT_RIGHT_TO_ICON);	// Make sure to be under the icon
- #endif
        if ((PartMode&0x0f)  != PART_MODE_JFET) {     /* kein JFET */
           ReadCapacity(_trans->b,_trans->e);	//measure capacity
           lcd_show_Cg();	// show Cg=xxxpF
+  #ifdef FET_Idss
+       } else { 	// it is a JFET
+          // display the I_DSS, if measured
+          if (_trans->uBE!=0) {
+             static const unsigned char str_Idss[] MEM_TEXT = "Idss=";
+             lcd_MEM_string(str_Idss);
+             DisplayValue16(_trans->uBE,-6,'A',2);
+          }
+  #endif
        }
-       lcd_next_line(0);	// single line
+       // set cursor below the icon
+  #define LINE_BELOW_ICON ((ICON_HEIGHT/8)/((FONT_HEIGHT+7)/8))
  #if LCD_LINES > 6
-       lcd_next_line(0);	// double line
+       lcd_set_cursor((LINE_BELOW_ICON + 1) * PAGES_PER_LINE,0);
+ #else
+       lcd_set_cursor(LINE_BELOW_ICON * PAGES_PER_LINE,0);
  #endif
        lcd_data('I');
  #if (LCD_LINE_LENGTH > 17)
@@ -928,6 +911,24 @@ showdiodecap:
        DisplayValue16(_trans->current,-6,'A',2);
        lcd_MEM_string(Vgs_str);		// "@Vg="
        Display_mV(_trans->gthvoltage,2);	//Gate-threshold voltage
+
+ #ifdef SHOW_ICE
+       // Display also the cutoff gate voltage, idea from Pieter-Tjerk
+       if (_trans->ice0<4800) { // can't trust cutoff voltage if close to 5V supply voltage, since then the transistor may not have been cut off at all
+          lcd_next_line_wait(0);
+          lcd_data('I');
+  #if (LCD_LINE_LENGTH > 17)
+          lcd_data('d');
+  #endif
+          lcd_equal();			// lcd_data('=');
+          DisplayValue16(0,-5,'A',2);
+          lcd_MEM_string(Vgs_str);		// "@Vg="
+          Display_mV(_trans->ice0,2);	// cutoff Gate voltage
+ #endif
+       }
+ #ifdef SHOW_R_DS
+       lcd_show_rds(0);                // show Drain-Source resistance RDS at column 0
+ #endif
     }	/* end of enhancement or depletion mode WITH_GRAPHICS */
 #else	/* character display */
     if((PartMode&D_MODE) != D_MODE) {	//enhancement-MOSFET
@@ -938,16 +939,25 @@ showdiodecap:
        lcd_MEM_string(vt_str);		// " Vt="
        Display_mV(_trans->gthvoltage,2);	//Gate-threshold voltage
   #ifdef SHOW_R_DS
-       lcd_next_line_wait(0);		// line 3, if possible & wait 5s and clear last line 
-       lcd_MEM_string(RDS_str);		// "RDS=
-       DisplayValue16(_trans->uBE,-1,LCD_CHAR_OMEGA,2);	// Drain-Source resistance
+       lcd_show_rds(0);                // show Drain-Source resistance RDS at column 0
   #endif
     } else {
+      // depletion
  #if FLASHEND > 0x1fff
        if ((PartMode&0x0f)  != PART_MODE_JFET) {     /* kein JFET */
           lcd_next_line(0);		// line 2
           ReadCapacity(_trans->b,_trans->e);	//measure capacity
           lcd_show_Cg();	// show Cg=xxxpF
+  #ifdef FET_Idss
+       } else {     // it is a JFET
+          // display the I_DSS, if measured
+          if (_trans->uBE!=0) {
+             lcd_next_line(0);
+             static const unsigned char str_Idss[] MEM_TEXT = "Idss=";
+             lcd_MEM_string(str_Idss);
+             DisplayValue16(_trans->uBE,-6,'A',2);
+          }
+  #endif
        }
        lcd_next_line_wait(0);		// line 2 or 3, if possible & wait and clear last line
  #endif
@@ -959,34 +969,53 @@ showdiodecap:
        DisplayValue16(_trans->current,-6,'A',2);
        lcd_MEM_string(Vgs_str);		// "@Vg="
        Display_mV(_trans->gthvoltage,2);	//Gate-threshold voltage
-    }
+ #ifdef SHOW_ICE
+       // Display also the cutoff gate voltage, idea from Pieter-Tjerk
+       if (_trans->ice0<4800) { // can't trust cutoff voltage if close to 5V supply voltage, since then the transistor may not have been cut off at all
+          lcd_next_line_wait(0);
+          lcd_data('I');
+  #if (LCD_LINE_LENGTH > 17)
+          lcd_data('d');
+  #endif
+          lcd_equal();			// lcd_data('=');
+          DisplayValue16(0,-5,'A',2);
+          lcd_MEM_string(Vgs_str);		// "@Vg="
+          Display_mV(_trans->ice0,2);	// cutoff Gate voltage
+       }
+ #endif
+ #ifdef SHOW_R_DS
+       lcd_show_rds(0);                // show Drain-Source resistance RDS at column 0
+ #endif
+    }   /* end of enhancement or depletion mode */
 #endif  /* WITH_GRAPHICS or without */
 
+#if DebugOut == 5
+    lcd_line4();
+    lcd_data('>');
+    lcd_data('|');
+    lcd_space();
+    DisplayValue16(NumOfDiodes,0,' ',3);
+#endif
 #if FLASHEND > 0x1fff
-    if(NumOfDiodes == 1) {
-       // there is enough space for long form of presenting protection diode
+    if (part_code != PART_MODE_JFET) {
+       for (ii=0;ii<NumOfDiodes;ii++) {
+          // there is enough space for long form of presenting protection diode
  #if LCD_LINES > 6
-       lcd_next_line(0);		// line 5 , if possible
+          if (ii == 0) lcd_next_line(0);		// line 5 , if possible
  #endif
-       lcd_next_line_wait(0);		// line 4, if possible & wait 5s and clear last line 
-       if (an_cat) {
-          lcd_testpin(diodes.Anode[0]);
-          lcd_MEM_string(AnKat_str);	//"->|-"
-          lcd_testpin(diodes.Cathode[0]);
-       } else {
-          lcd_testpin(diodes.Cathode[0]);
-          lcd_MEM_string(KatAn_str);	//"-|<-"
-          lcd_testpin(diodes.Anode[0]);
-       }
-       lcd_space();
-       lcd_MEM_string(Uf_str);			//"Uf="
-       mVAusgabe(0);
-       uart_newline();			// MAURO OK N-E-MOS/IGBT ('F')
-    } /* end NumOfDiodes == 1 */
+          lcd_next_line_wait(0);		// line 4, if possible & wait 5s and clear last line 
+          DiodeSymbol_withPins(ii);
+          lcd_MEM_string(Uf_str);			//"Uf="
+          mVAusgabe(ii);
+          uart_newline();			// MAURO OK N-E-MOS/IGBT ('F')
+       } /* end for ii (NumOfDiodes) */
+    }  /* PART_MODE != JFET */
 #endif
 #ifdef WITH_GRAPHICS
-    if (tmp == PART_MODE_IGBT) {
+    if (part_code == PART_MODE_IGBT) {
        PinLayoutLine('E','G','C'); 		//  Pin 1=...
+    } else if (part_code == PART_MODE_JFET) {
+       PinLayoutLine('?','G','?'); 		//  Pin 1=...
     } else {
        PinLayoutLine('S','G','D'); 		//  Pin 1=...
     }
@@ -996,7 +1025,8 @@ showdiodecap:
   }  /* end (PartFound == PART_FET) */
 
 //   if(PartFound == PART_RESISTOR) 
-	resistor_out: if (ResistorsFound != 0) {
+resistor_out:
+  if (ResistorsFound != 0) {
     if (ResistorsFound == 1) { // single resistor
 
        rpins.pw = Rnum2pins(ResistorList[0]);	// get pin numbers for resistor 1
@@ -1080,7 +1110,7 @@ showdiodecap:
 
   lcd_MEM_string(TestFailed1); 	//"Kein,unbek. oder"
   lcd_line2(); //2. row 
-#if defined(LANG_ITALIAN)               //italiano
+#if defined(LANG_ITALIAN) || defined(LANG_FRANCAIS)	//italiano or francais
   lcd_MEM_string(Bauteil);		//"campione"
   lcd_space();
   lcd_MEM_string(TestFailed2); 		//"guasto "
@@ -1219,6 +1249,22 @@ end3:
 
 }   // end main
 
+
+// function search_vak_diode try to find a diode, which has no side connected to the transistor base
+// returns 20, if no diode found
+uint8_t search_vak_diode() {
+    uint8_t ii;
+    for (ii=0; ii<NumOfDiodes; ii++) {
+			if ((diodes.Anode[ii] == _trans->b)
+					|| (diodes.Cathode[ii] == _trans->b))
+				continue;
+       // no side of the diode is connected to the base, this must be the protection diode   
+       if (diodes.Voltage[ii] > 1000) break; // Voltage is too high for protection diode
+       return ii;
+    }
+    return 20;
+}
+
 /* init_parts initialize all parts to nothing found */
 void init_parts(void) {
   PartFound = PART_NONE;	// no part found
@@ -1253,6 +1299,7 @@ void switch_tester_off(void)
   lcd_powersave();			// set graphical display to power save mode
  #endif
   ON_PORT &= ~(1<<ON_PIN);		//switch off power
+  wait2s();
   wait_for_key_ms(0); //never ending loop 
 }
 

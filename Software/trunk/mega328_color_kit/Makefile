@@ -64,8 +64,9 @@ CFLAGS += -DWITH_ROTARY_SWITCH=2
 # CFLAGS += -DROTARY_2_PIN=PD2
 
 # Select your language:
-# Available languages are: LANG_BRASIL, LANG_CZECH, LANG_DUTCH, LANG_ENGLISH, LANG_GERMAN, LANG_HUNGARIAN, LANG_ITALIAN,
-#                          LANG_LITHUANIAN, LANG_POLISH, LANG_RUSSIAN , LANG_SLOVAK, LANG_SLOVENE, LANG_SPANISH, LANG_UKRAINIAN
+# Available languages are: LANG_BRASIL, LANG_CZECH, LANG_DANISH, LANG_DUTCH, LANG_ENGLISH, LANG_GERMAN, LANG_HUNGARIAN,
+#                          LANG_ITALIAN,LANG_LITHUANIAN, LANG_POLISH, LANG_RUSSIAN , LANG_SLOVAK, LANG_SLOVENE,
+#                          LANG_SPANISH, LANG_UKRAINIAN
 UI_LANGUAGE = LANG_ENGLISH
 
 # The LCD_CYRILLIC option is necessary, if you have a display with cyrillic characterset.
@@ -158,6 +159,10 @@ CFLAGS += -DLCD_BG_COLOR=0x7800
 # You can select the foreground color (format 5 bit red, 6 bit green, 5 bit blue)
 CFLAGS += -DLCD_FG_COLOR=0xffff
 
+# You can also select a icon color  (format 5 bit red, 6 bit green, 5 bit blue)
+# If LCD_ICON_COLOR is not specified, the LCD_FG_COLOR is used
+CFLAGS += -DLCD_ICON_COLOR=0x03ff
+
 # If option WITH_LCD_ST7565 is present one of the following fonts should be
 # choosen. With a font width below 8 more than 16 characters can be shown in one display line.
 #CFLAGS += -DFONT_5X8
@@ -226,6 +231,8 @@ WITH_SamplingADC = 1
 #CFLAGS += -DWITH_UJT
 # Option WITH_PUT enables additional tests for PUT (Programmable Unijunction Transistor)
 #CFLAGS += -DWITH_PUT
+# Option FET_Idss will measure the Idss parameter for FETs, if not estimated > 40mA.
+CFLAGS += -DFET_Idss
 
 # The WITH_AUTO_REF option enables reading of internal REF-voltage to get factors for the Capacity measuring.
 CFLAGS += -DWITH_AUTO_REF
@@ -243,7 +250,7 @@ CFLAGS += -DC_H_KORR=0
 # You can set WITH_UART to 2 to enable a special mode of serial output with line number in column 1.
 # If the option is deselected, PC3 can be used as external voltage input with a
 # 10:1 resistor divider.
-CFLAGS += -DWITH_UART
+#CFLAGS += -DWITH_UART
 
 # With option TQFP_ADC6 or/and TQFP_ADC7 you can use the additional pins of the TQFP or
 # the QFN package for external analog input. You should install a 10:1 voltage dividers
@@ -256,7 +263,7 @@ CFLAGS += -DWITH_UART
 # is not used for serial output (WITH_UART option).
 # For ATmega644/1284 processor the UART has a separate pin.  Therefore the external input
 # at pin ADC3 can be enabled separate by setting the WITH_UART option.
-#CFLAGS += -DWITH_VEXT
+CFLAGS += -DWITH_VEXT
 
 #
 # If you want to measure Inductors with the resistance meter, you must specify

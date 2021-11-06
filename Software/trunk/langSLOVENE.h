@@ -1,5 +1,5 @@
 #if defined(LANG_SLOVENE)                    //slovenian
-   const unsigned char TestRunning[] MEM_TEXT = "Testiranje..."; 
+   const unsigned char TestRunning[] MEM_TEXT = "Testiranje"; 
    const unsigned char BatWeak[] MEM_TEXT = "slaba!"; 
    const unsigned char BatEmpty[] MEM_TEXT = "prazna!"; 
    const unsigned char TestFailed2[] MEM_TEXT = "pokvarjen "; 
@@ -9,7 +9,7 @@
    const unsigned char Thyristor[] MEM_TEXT = "Tiristor";
    const unsigned char Unknown[] MEM_TEXT = " neznan"; 
    const unsigned char TestFailed1[] MEM_TEXT = "Ni, neznan, ali"; 
-   const unsigned char OrBroken[] MEM_TEXT = "ali zanic "; 
+   const unsigned char Detected[] MEM_TEXT = " detektira";
    const unsigned char TestTimedOut[] MEM_TEXT = "Timeout!";
    #define Cathode_char 'C'
  #ifdef WITH_SELFTEST
@@ -20,7 +20,12 @@
  #ifdef WITH_MENU
    const unsigned char SELECTION_str[] MEM2_TEXT = "Izbor:";
    const unsigned char TESTER_str[] MEM2_TEXT = "Tranzistor";
+  #ifndef NO_FREQ_COUNTER
    const unsigned char FREQ_str[] MEM2_TEXT = "Frekvenca";
+ #ifdef WITH_FREQUENCY_DIVIDER
+   const unsigned char FScaler_str[] MEM2_TEXT = "F-Scaler";
+ #endif
+  #endif
    const unsigned char VOLTAGE_str[] MEM2_TEXT = "Voltage";
    const unsigned char SHOW_str[] MEM2_TEXT = "Prikazi podatke";	// "Show data"
    const unsigned char OFF_str[] MEM2_TEXT = "izklopi";

@@ -1,5 +1,5 @@
 #if defined(LANG_SLOVAK)		//slowakisch
-   const unsigned char TestRunning[] MEM_TEXT = "Testujem ..."; //"Prebieha meranie";
+   const unsigned char TestRunning[] MEM_TEXT = "Testujem"; //"Prebieha meranie";
    const unsigned char BatWeak[] MEM_TEXT = "slaba"; //€€";
    const unsigned char BatEmpty[] MEM_TEXT = "vybita";		//"prazdna!";
    const unsigned char TestFailed2[] MEM_TEXT = "vadna "; //€€€€€€";
@@ -9,7 +9,7 @@
    const unsigned char Thyristor[] MEM_TEXT = "Tyristor"; 
    const unsigned char Unknown[] MEM_TEXT = " neznama"; 
    const unsigned char TestFailed1[] MEM_TEXT = "Ziadna, neznama,"; 
-   const unsigned char OrBroken[] MEM_TEXT = "alebo vadna "; 
+   const unsigned char Detected[] MEM_TEXT = " detekuje";
    const unsigned char TestTimedOut[] MEM_TEXT = "Prekroceny cas!"; //"Timeout!";
    #define Cathode_char 'K'
  #ifdef WITH_SELFTEST
@@ -20,7 +20,12 @@
  #ifdef WITH_MENU
    const unsigned char SELECTION_str[] MEM2_TEXT = "Vyber:";
    const unsigned char TESTER_str[] MEM2_TEXT = "Tester";	//"Tranzistor";
+  #ifndef NO_FREQ_COUNTER
    const unsigned char FREQ_str[] MEM2_TEXT = "Frekvencia";
+ #ifdef WITH_FREQUENCY_DIVIDER
+   const unsigned char FScaler_str[] MEM2_TEXT = "F-Scaler";
+ #endif
+  #endif
    const unsigned char VOLTAGE_str[] MEM2_TEXT = "Napetie";
    const unsigned char SHOW_str[] MEM2_TEXT = "Informacie";	// "Show data"
    const unsigned char OFF_str[] MEM2_TEXT = "Vypnut";

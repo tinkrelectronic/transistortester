@@ -25,9 +25,9 @@ make atmega328p
 ATmega328P with 16MHz and 115200 Baud.
 
 With the simular call:
-*******************
-make atmega328p_isp 
-*******************
+*********************
+make atmega328p ISP=1
+*********************
 the program data will be transfered to the ISP-programmer and additionaly all fuses are set.
 You should know, that the Flash memory content is completely erased before
 programming the new bootloader code. Any application program must be programmed
@@ -41,22 +41,28 @@ automatically and set the start address and the required fuses right
 according to the actual size.
 This kind of automatic is tested at a Linux system and should run at any Linux system.
 But it is completely untested for any Windows system.
-This optiboot bootloader is only tested with a Arduino-UNO board and with a Arduino-Nano clone.
+This optiboot bootloader is tested with a Arduino-UNO and -Nano board and with 
+nearly all supported processors (see the list at the end of this ReadMe2).
+Only the AT90CAN64, the ATmega1280/2560, the ATmega16u4 and the ATmega8u2/16u2 are untestet.
 
 The optional implementation of a software UART requires a little more space, but should
 also match to a 512 Byte boot partition.
 Lower baud rates can often better supported with the SOFT_UART option and you are free to
 select any present port pin for the serial input and output (assembly version only!).
-With a 20 MHz CPU you can select baud rates above 3250 Baud, with lower CPU clock rates
-you can also select lower baud rates.
-With the 20 MHz CPU the lowest selectable standard serial rate is 9600 baud,
-with a 16 MHz CPU you can also select 4800 baud.
+With a 20 MHz CPU you can select baud rates of 300 Baud and higher, with lower CPU clock rates
+you can even select lower baud rates.
+With the hardware solution and a 20 MHz CPU the lowest selectable standard serial rate is 600 baud,
+with a 16 MHz CPU you can also select 300 baud.
 If your CPU clock rate is sufficient, the standard serial rate of 115200 baud
 is a good selection to get a fast transmission. 
 For a good CPU clock rate match is also 1 Mbaud possible with the hardware UART.
 
+The VIRTUAL_BOOT_PARTITION feature is only checked with the tested ATtiny processors.
+For all processors without a boot partition the option VIRTUAL_BOOT_PARTITION is
+set automatically.
 Normally the start vector is switched with the fuses (BOOTRST bit) to the
-bootloader start address. If the VIRTUAL_BOOT_PARTITION is selectec, the AVR reset vector
+bootloader start addresss, but this feature is missing at the ATtiny84.
+If the VIRTUAL_BOOT_PARTITION is selected, the AVR reset vector
 can remain at the application start address (0x0000).
 Instead of switching the Reset start address the Reset interrupt vector of the
 application program should be changed to the bootloader start address.
@@ -75,7 +81,8 @@ A patch program can analyse the data more in detail as it is possible within
 the space limited boot loader.
 One of the difficulties with the patch is, that for Flash memory space above 8K
 the interrupt vector addresses can hold a JMP or also a RJMP instruction!
-
+Currently the bootloader assumes, that only JMP intructions are used in the 
+interrupt vector table, if the processor has more than 8 kByte flash memory.
 
 =======================================================================================
 Available options
@@ -83,6 +90,12 @@ Available options
 AVR_FREQ		specifies the frequency (Hz), at which the AVR mikrocontroller should run.
 
 BAUD_RATE		specifies the baud rate for the serial interface.
+			If a value below 100 Baud is specified, optiboot use a
+			measurement of the baud rate instead of a fixed baud rate.
+			If a baud rate below 60 is specified, a simpler measurement
+			is used to save memory.
+			If a baud rate below 40 is specified, a additional monitoring
+			of the time is omitted with this simpler measurement.
 
 SOFT_UART		Whith this option you select a software UART solution instead of
 			a hardware UART. With the software solutions you are free to select
@@ -104,7 +117,9 @@ UART			specifies the hardware UART-interface to use.
 
 LED_START_FLASHES	specifies, how often the LED should flicker, before the serial 
 			communication is started. If you specify a 0, no LED output is done.
-			If you specify a 1, the LED Flash only onces without the program loop.
+			If you specify a 1 or -1, the LED Flash only onces without the program loop.
+			Negative settings will force a break of the flashing loop by
+			incoming RX data.
 
 LED_DATA_FLASH		let the LED light during wait for a serial character input. 
 
@@ -145,6 +160,22 @@ VIRTUAL_BOOT_PARTITION 	this option changes two interrupt vector jmp addresses,
 			as long as this EEprom data are not destroyed by
 			the application program.
 
+TIMEOUT_MS		This option specifies a time limit in ms units for receiving boot data. 
+			After this time without data the boot process is aborted and it is tried to
+			start the user program.
+			Possible values for TIMEOUT_MS are 500, 1000, 2000, 4000 and 8000.
+			The effective value can be limited to 2 seconds because of processor limits for the watchdog.
+
+OSCCAL_CORR		This option specifies a correction value for the OSCCAL Byte of the AVR-Processor.
+			The correction value is only effectual, if the internal RC-oscillator of the AVR processor
+			is used, not with the crystal operation.
+			Because the produced Baud-rate depends directly of the processor clock,
+			a calibrated clock frequency is important for a successfull serial data transfer.
+
+FORCE_RSTDISBL		You can set this option to 1, if you plan to set the RSTDISBL feature in the HFUSE.
+			The setting of the RSTDISBL bit (to 0) is detected by optiboot and
+			the compiling is aborted without the setting of this option. 
+
 Recommendation:
 ===============
 The optiboot loader transfer the original content of the MCUSR register to the application
@@ -156,7 +187,20 @@ The GPIORx register has no special function and can therefore used without any r
 A additional use of this register by a application program is not prohibited.
 For AVR mikrocontrollers without this IO register group the counter register OCR2 is used.
 
-The AVR processors ATtiny84, ATmega8, ATmega328 and ATmega1284 are currently tested with
-this assembler version of optiboot.
+List of the supported AVR-Prozessors:
+==========================
+ATmega8/16/32/64/128
+ATmega162/163
+ATmega164/324/644/1284 (P)
+ATmega48/88/168/328  (P)
+ATmega165/325/3250/6450
+ATmega169/329/649/6490
+ATmega640/1280/1281/2560/2561
+AT90CAN32/64/128
+AT90PWM2/3
+ATtiny84/841/861/4413/44/441/461/2313/24/85/45/88/48/1634
+ATmega16u4/32u4
+ATmega8u2/16u2/32u2
+For some processors the finish test is missing!
 
 I look forward for any replies to the "assembly language optiboot" subject.

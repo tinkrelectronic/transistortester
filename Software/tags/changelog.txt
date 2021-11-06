@@ -1,3 +1,22 @@
+Unterstützung des "1.5inch OLED Module" mit ssd1327 Controller.
+Für mega328_color_kit die Anzeige der externen Spannung statt der seriellen Ausgabe freigeschaltet.
+Fehlerhafte Elkos werden weniger oft als Diode erkannt.
+Added option LCD_ICON_COLOR for different color selection for big icons.
+Function expand_FET_quadratic mit Rundung.
+Frequenzgrenze für Periodenmessung auf 33kHz verschoben.
+Frequency-Scaler (WITH_FREQUENCY_DIVIDER) reorganisiert, 2er Potenz statt Zahl (1 bis 512).
+Geringerer Flash Benutzung mit Funktionen signed_diff und vcc_diff.
+Maximale Anzahl der Auswahlzeilen für das Menü mit der Option MAX_MENU_LINES wählbar (Standard 5).
+Einstellbarer Vorteiler für Frequenzmessung mit Option WITH_FREQUENCY_DIVIDER.
+Keine Ausgabe von RDS bei IGBTs.
+Zusätzliche Makefile Option NO_FREQ_COUNTER.
+Anzeige  IDss mit der Option FET_Idss für JFETs, wenn unter 40mA.
+Änderung der Anzeige bei unbekanntem Bauteil mit vielen Dioden.
+Messung der Cut-off Spannung bei Verarmungs-FET und JFET (Pieter-Tjerk).
+Fortschrittsanzeige durch Punktreihe beim Test (Pieter-Tjerk).
+Bereich von get_log erweitert.
+Analyse in sampling_lc und peaksearch überarbeitet. 
+Zeit für Abbruch der Frequenzerzeugung auf 2s erhöht.
 Vorbereitung zur Änderung der Portpin-Reihenfolge für TP1-TP3.
 Zusätzliche CRLF auf serieller Schnittstelle, bei Option WITH_UART=2 mit Zeilennummer in Spalte 1. (MAURO)
 1.12 / 22.01.2017

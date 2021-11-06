@@ -38,7 +38,7 @@ CFLAGS += -DWITH_MENU
 # graphical displays after the presentation of calibration data.
 # You can switch off the presentation of the icons and the font data by setting
 # the option NO_ICONS_DEMO to save flash memory and display time.
-#CFLAGS += -DNO_ICONS_DEMO
+CFLAGS += -DNO_ICONS_DEMO
 
 # The menu function can be easier controlled with a incremental encoder (rotary switch).
 # Both switches of the rotary switch can be connected with 1 kOhm resistors to PD1 and PD3.
@@ -64,8 +64,9 @@ CFLAGS += -DWITH_ROTARY_SWITCH=2
 # CFLAGS += -DROTARY_2_PIN=PD2
 
 # Select your language:
-# Available languages are: LANG_BRASIL, LANG_CZECH, LANG_DUTCH, LANG_ENGLISH, LANG_GERMAN, LANG_HUNGARIAN, LANG_ITALIAN,
-#                          LANG_LITHUANIAN, LANG_POLISH, LANG_RUSSIAN , LANG_SLOVAK, LANG_SLOVENE, LANG_SPANISH, LANG_UKRAINIAN
+# Available languages are: LANG_BRASIL, LANG_CZECH, LANG_DANISH, LANG_DUTCH, LANG_ENGLISH, LANG_GERMAN, LANG_HUNGARIAN,
+#                          LANG_ITALIAN,LANG_LITHUANIAN, LANG_POLISH, LANG_RUSSIAN , LANG_SLOVAK, LANG_SLOVENE,
+#                          LANG_SPANISH, LANG_UKRAINIAN
 UI_LANGUAGE = LANG_ENGLISH
 
 # The LCD_CYRILLIC option is necessary, if you have a display with cyrillic characterset.
@@ -225,6 +226,8 @@ WITH_SamplingADC = 1
 #CFLAGS += -DWITH_UJT
 # Option WITH_PUT enables additional tests for PUT (Programmable Unijunction Transistor)
 #CFLAGS += -DWITH_PUT
+# Option FET_Idss will measure the Idss parameter for FETs, if not estimated > 40mA.
+CFLAGS += -DFET_Idss
 
 # The WITH_AUTO_REF option enables reading of internal REF-voltage to get factors for the Capacity measuring.
 CFLAGS += -DWITH_AUTO_REF

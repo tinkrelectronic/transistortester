@@ -1,5 +1,5 @@
 #if defined(LANG_SPANISH)
-   const unsigned char TestRunning[] MEM_TEXT = "Testeando...";	
+   const unsigned char TestRunning[] MEM_TEXT = "Testeando";	
    const unsigned char BatWeak[] MEM_TEXT = "Poca bateria"; 	
    const unsigned char BatEmpty[] MEM_TEXT = "Sin bateria"; 	
    const unsigned char TestFailed2[] MEM_TEXT = "Pieza "; 	
@@ -9,7 +9,7 @@
    const unsigned char Thyristor[] MEM_TEXT = "Tiristor";
    const unsigned char Unknown[] MEM_TEXT = "No se ?"; 	
    const unsigned char TestFailed1[] MEM_TEXT = "Componente mal"; 
-   const unsigned char OrBroken[] MEM_TEXT = " o roto "; 
+   const unsigned char Detected[] MEM_TEXT = " detecta";
    const unsigned char TestTimedOut[] MEM_TEXT = "Tiempo agotado!";
    #define Cathode_char 'K'
  #ifdef WITH_SELFTEST
@@ -20,7 +20,12 @@
  #ifdef WITH_MENU
    const unsigned char SELECTION_str[] MEM2_TEXT = "Seleccion:";
    const unsigned char TESTER_str[] MEM2_TEXT = "Transistor";
+  #ifndef NO_FREQ_COUNTER
    const unsigned char FREQ_str[] MEM2_TEXT = "Frequencia";
+ #ifdef WITH_FREQUENCY_DIVIDER
+   const unsigned char FScaler_str[] MEM2_TEXT = "F-Scaler";
+ #endif
+  #endif
    const unsigned char VOLTAGE_str[] MEM2_TEXT = "Voltage";
    const unsigned char SHOW_str[] MEM2_TEXT = "mostrar datos";	
    const unsigned char OFF_str[] MEM2_TEXT = "desconectar";

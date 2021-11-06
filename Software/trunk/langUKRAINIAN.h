@@ -1,5 +1,5 @@
 #if defined(LANG_UKRAINIAN)		//Ukrainian
-   const unsigned char TestRunning[] MEM_TEXT = {'T','e','c',Cyr_t,'y',Cyr_v,'a',Cyr_n,Cyr_n,Cyr_ja,'.','.','.',0}; //Тестування...";
+   const unsigned char TestRunning[] MEM_TEXT = {'T','e','c',Cyr_t,'y',Cyr_v,'a',Cyr_n,Cyr_n,Cyr_ja,0}; //Тестування...";
    const unsigned char BatWeak[] MEM_TEXT = {'C',Cyr_l,'a',Cyr_b,Cyr_k,'a',0}; //Слабка";
    const unsigned char BatEmpty[] MEM_TEXT = {Cyr_Z,'A','M','I','H','A',0}; //ЗАМIНА";
    const unsigned char TestFailed2[] MEM_TEXT = {Cyr_v,'i',Cyr_d,'c','y',Cyr_t,Cyr_n,Cyr_ja,' ',0}; //вiдсутня ";
@@ -9,7 +9,8 @@
    const unsigned char Thyristor[] MEM_TEXT = {'T',Cyr_i,'p',Cyr_i,'c',Cyr_t,'o','p',0}; //Тиристор
    const unsigned char Unknown[] MEM_TEXT = {' ',Cyr_n,'e',Cyr_v,'i',Cyr_d,'o',Cyr_m,'a',0}; //" невiдома";
    const unsigned char TestFailed1[] MEM_TEXT = {Cyr_P,'o',Cyr_sch,Cyr_k,'o',Cyr_d,Cyr_zsch,'e',Cyr_n,'a',' ',' ','a',Cyr_b,'o',0}; //Пошкоджена або";
-   const unsigned char OrBroken[] MEM_TEXT = {Cyr_n,'e','c',Cyr_p,'p','a',Cyr_v,Cyr_n,'a',' ',' ',0}; //несправна  ";
+//   const unsigned char OrBroken[] MEM_TEXT = {Cyr_n,'e','c',Cyr_p,'p','a',Cyr_v,Cyr_n,'a',' ',' ',0}; //несправна  ";
+   const unsigned char Detected[] MEM_TEXT = " detected";
    const unsigned char TestTimedOut[] MEM_TEXT = {'T','a',Cyr_j,Cyr_m,'a','y',Cyr_t,0}; //Таймаут
    #define Cathode_char 'C'
  #ifdef WITH_SELFTEST
@@ -22,7 +23,12 @@
 
    const unsigned char TESTER_str[] MEM2_TEXT = {'T','p','a',Cyr_n,Cyr_z,Cyr_i,'c',Cyr_t,'o','p',' ','T','e','c',Cyr_t,0}; //"TransistorT"
 
+  #ifndef NO_FREQ_COUNTER
    const unsigned char FREQ_str[] MEM2_TEXT = {Cyr_Tsch,'a','c',Cyr_t,'o',Cyr_t,'o',Cyr_m,'i','p',0};
+ #ifdef WITH_FREQUENCY_DIVIDER
+   const unsigned char FScaler_str[] MEM2_TEXT = "F-Scaler";
+ #endif
+  #endif
 
    const unsigned char VOLTAGE_str[] MEM2_TEXT = {'B','o',Cyr_l,Cyr_ww,Cyr_t,Cyr_m,'e',Cyr_t,'p',0}; //"Voltage"
    const unsigned char SHOW_str[] MEM2_TEXT = {Cyr_P,'o',Cyr_k,'a',Cyr_z,'a',Cyr_t,Cyr_i,' ',Cyr_d,'a',Cyr_n,'i',0}; //"Show data";

@@ -6,11 +6,11 @@
 ATmega1280 or ATmega2560 microcontrollers can be used.
 \item Displaying the results to a 2x16 or a 4x16 character LCD-Display.
  If the processor have at least 32K flash memory, also a graphical display with 128x64 pixel and
-a ST7565, ST7920, ST7108, KS0108 or a SSD1306 controller can be used.
+a ST7565, ST7920, NT7108, KS0108 or a SSD1306 controller can be used.
 In doing so a 4-wire SPI interface or a I\textsuperscript{2}C bus must be used instead of the 4-bit parallel interface for
 the SSD1306 controller.
 Even color displays with ILI9163 or ST7735 controller are usable with the SPI interface.
-For the ST7108 or KS0108 controller you must use a serial - parallel interface with a 74HC(T)164 or a 74HC(T)595.
+For the NT7108 or KS0108 controller you must use a serial - parallel interface with a 74HC(T)164 or a 74HC(T)595.
 Displays with PCF8812 or PCF8814 controller can be only used without the big icons for transistors, because the display size is
 unsufficient (102x65 and 96x65).
 \item One key operation with automatic power shutdown.
@@ -117,7 +117,7 @@ The tester will then continue with the normal tester function.
 \item For processors with at least 32K flash a dialog function can be selected, which enable additional functions.
 Of course you can return from dialog to the normal Transistor Tester function.
 \item With dialog function you can use a frequency measurement at port PD4 of the ATmega.
-The resolution is \(1Hz\) for input frequencies above \(25kHz\).
+The resolution is \(1Hz\) for input frequencies above \(33kHz\).
 For lower frequencies the resolution can be up to \(0.001mHz\) by measuring the mean period.
 You should read the the subsection Frequency measurement \ref{sec:frequency_counter} at page \pageref{sec:frequency_counter} 
 for details of connection a frequency signal.
@@ -127,7 +127,7 @@ pins can be used for the voltage measurement together with the serial output.
 If the zener diode measurement extension (DC-DC converter) is assembled, the measurement of
 zener diodes is also possible with this function by pressing the key.
 \item With the dialog function a frequency output can be selected at the TP2 pin (PB2 Port of the ATmega).
-Currently a preselection of frequencies from \(1Hz\) up to \(2MHz\) can be selected.
+Currently frequencies from \(1Hz\) up to \(2MHz\) can be selected.
 \item With the dialog function a fixed frequency output with selectable pulse width can be activated at the TP2 pin
 (PB2 port of the ATmega). The width can be enhanced with \(1\%\) by a short key press or with \(10\%\) by a longer key press.
 \item With the dialog function can be started a separated capacity measurement with ESR measurement.

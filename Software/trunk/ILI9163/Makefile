@@ -64,8 +64,9 @@ CFLAGS += -DWITH_ROTARY_SWITCH=2
 # CFLAGS += -DROTARY_2_PIN=PD2
 
 # Select your language:
-# Available languages are: LANG_BRASIL, LANG_CZECH, LANG_DUTCH, LANG_ENGLISH, LANG_GERMAN, LANG_HUNGARIAN, LANG_ITALIAN,
-#                          LANG_LITHUANIAN, LANG_POLISH, LANG_RUSSIAN , LANG_SLOVAK, LANG_SLOVENE, LANG_SPANISH, LANG_UKRAINIAN
+# Available languages are: LANG_BRASIL, LANG_CZECH, LANG_DANISH, LANG_DUTCH, LANG_ENGLISH, LANG_GERMAN, LANG_HUNGARIAN,
+#                          LANG_ITALIAN,LANG_LITHUANIAN, LANG_POLISH, LANG_RUSSIAN , LANG_SLOVAK, LANG_SLOVENE,
+#                          LANG_SPANISH, LANG_UKRAINIAN
 UI_LANGUAGE = LANG_ENGLISH
 
 # The LCD_CYRILLIC option is necessary, if you have a display with cyrillic characterset.
@@ -161,9 +162,9 @@ CFLAGS += -DLCD_FG_COLOR=0xffff
 # choosen. With a font width below 8 more than 16 characters can be shown in one display line.
 #CFLAGS += -DFONT_5X8
 #CFLAGS += -DFONT_6X8
-CFLAGS += -DFONT_8X8
+#CFLAGS += -DFONT_8X8
 #CFLAGS += -DFONT_7X12
-#CFLAGS += -DFONT_8X12thin
+CFLAGS += -DFONT_8X12thin
 #CFLAGS += -DFONT_8X14
 #CFLAGS += -DFONT_8X15
 #CFLAGS += -DFONT_8X16
@@ -192,7 +193,7 @@ CFLAGS += -DWITH_SELFTEST
 # The T1 to T7 tests are usefull to find problems with your tester.
 # You can also disable the extended tests T1 to T7 with the option NO_TEST_T1_T7 to accelerate the calibration
 # for the atmega328 and atmega168.
-CFLAGS += -DNO_TEST_T1_T7
+#CFLAGS += -DNO_TEST_T1_T7
 
 # FREQUENCY_50HZ enables a 50 Hz frequency generator for up to one minute at the end of selftests.
 #CFLAGS += -DFREQUENCY_50HZ
@@ -220,11 +221,13 @@ WITH_SamplingADC = 1
 
 # Option WITH_XTAL enables additional Xtal / Ceramic resonator tests.
 # Option can be set only together with SamplingADC=1 and OP_MHZ=16
-CFLAGS += -DWITH_XTAL 
+#CFLAGS += -DWITH_XTAL 
 # Option WITH_UJT enables additional tests for UJT (UniJunction Transistor)
 #CFLAGS += -DWITH_UJT
 # Option WITH_PUT enables additional tests for PUT (Programmable Unijunction Transistor)
 #CFLAGS += -DWITH_PUT
+# Option FET_Idss will measure the Idss parameter for FETs, if not estimated > 40mA.
+CFLAGS += -DFET_Idss
 
 # The WITH_AUTO_REF option enables reading of internal REF-voltage to get factors for the Capacity measuring.
 CFLAGS += -DWITH_AUTO_REF

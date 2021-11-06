@@ -38,10 +38,10 @@ The following options in the Makefile are avaiable to configure the software for
          m2560         = ATmega2560\\
     Example:  PARTNO = m168
    \item[UI\_LANGUAGE] specifies the favored Language\\
-    LANG\_BRASIL, LANG\_CZECH, LANG\_DUTCH, LANG\_ENGLISH, LANG\_GERMAN, \\
-    LANG\_HUNGARIAN, LANG\_ITALIAN, LANG\_LITHUANIAN, LANG\_POLISH, \\
-    LANG\_RUSSIAN, LANG\_SLOVAK, LANG\_SLOVENE, LANG\_SPANISH  and \\
-    LANG\_UKRAINIAN is currently avaiable.
+    LANG\_BRASIL, LANG\_CZECH, LANG\_DANISH, LANG\_DUTCH, LANG\_ENGLISH, \\
+    LANG\_GERMAN, LANG\_HUNGARIAN, LANG\_ITALIAN, LANG\_LITHUANIAN, \\
+    LANG\_POLISH, LANG\_RUSSIAN, LANG\_SLOVAK, LANG\_SLOVENE, \\
+    LANG\_SPANISH  and LANG\_UKRAINIAN is currently avaiable.
  The russian or ukrainian language requires a LCD with cyrillic character set.\\
     Example:  UI\_LANGUAGE = LANG\_ENGLISH
 
@@ -68,13 +68,13 @@ Some displays like TC1604 or TC1602 use a 128 (0x80) for the beginning of line 1
 This can be respected with this option.
 Example: CFLAGS += -DDD\_RAM\_OFFSET = 128
 
-  \item[WITH\_LCD\_ST7665] This option must be used, if a 128x64 pixel LCD is connected with serial
+  \item[WITH\_LCD\_ST7565] This option must be used, if a 128x64 pixel LCD is connected with serial
 interface. For this display type further options must be set, which are described in table~\ref{tab:cod-display}.
 You can also use the simular SSD1306 controller instead of the ST7565 controller for example.
 This must be done by setting the variable WITH\_LCD\_ST7565 to 1306.
 A PCF8812 or PCF8814 Controller is also supported, if the Option is set correctly.
-Also a display with a ST7920 or ST7108 controller can be connected.
-For the ST7108 controller a additional serial-parallel converter 74HC(T)164 or 74HC(T)595 must be used.  \\
+Also a display with a ST7920 or NT7108 controller can be connected.
+For the NT7108 controller a additional serial-parallel converter 74HC(T)164 or 74HC(T)595 must be used.  \\
 Example: WITH\_LCD\_ST7565 = 1 
 
  \item[LCD\_INTERFACE\_MODE] For the SSD1306 controller also the I\textsuperscript{2}C type interface with address 0x3c
@@ -106,7 +106,7 @@ All currently used values for LCD\_INTERFACE\_MODE and WITH\_LCD\_ST7565 are sho
     \hline
   Graphic ST7920    & 2-Bit serial     &   7920            &  5 \\
     \hline
-  Graphic ST7108    & 8-Bit parallel   &   7108            &  disabled (6) \\
+  Graphic NT7108    & 8-Bit parallel   &   7108            &  disabled (6) \\
     or KS0108       &    + 74HCT164    &                   &      \\
     \hline
   Graphic PCF8812   & SPI              &   8812            & disabled (4) \\
@@ -215,6 +215,19 @@ Example: CFLAGS += -DSTRIP\_GRID\_BOARD
 selection menu, which you can call with a long key press (\textgreater~0.5s).\\
 Example: CFLAGS += -DWITH\_MENU
 
+ \item[MAX\_MENU\_LINES]
+This option specifies a maximum count of lines for the shown choices of menu items.
+Normally the count of lines for the menu items is given by the present count of lines of the display.
+Because there are usually more items selectable as the display can support,
+the choices are replaced in a cyclic manner.
+Building the display content in this cyclic way will take several time, especially for big color displays 
+with many lines.
+With the limitation of the line count by this option you can reduce the output time for the menu choices significant,
+which will speed up the operation.
+The default value for this item is 5.\\
+Beispiel: CFLAGS += -DMAX\_MENU\_LINES=3
+
+
   \item[WITH\_ROTARY\_SWITCH] The menu function can be easier controlled with a the extension of a rotary pulse encoder.
 See the description~\ref{fig:RotExt} in the Hardware section for details of the required extension.
 If your rotary pulse encoder has the same count of indexed positions (detent) as pulses of the switch for every turn, you must
@@ -272,6 +285,34 @@ This reduces the required space of flash memory  and also the display time for t
 which already know, how to calibrate the tester.\\
 Example: CFLAGS += -DSHORT\_UNCAL\_MSG
 
+ \item[NO\_ICONS\_DEMO]
+This option will switch off the additional demonstration of the icons and the output of the character set with
+the menu function ''Show data''.
+This reduces the required space of flash memory  and also the display time for the user.\\
+Example: CFLAGS += -DNO\_ICONS\_DEMO
+
+ \item[WITH\_ROTARY\_CHECK]
+This option enables the additional menu function for the test of a rotary encoder.
+For the test you must connect a rotary encoder to the test pins TP1, TP2 and TP3.
+Please note, that you can not check the build-in rotary-encoder of the tester!
+You can also use a rotary encoder for ease in operation of the tester with the option WITH\_ROTARY\_SWITCH.\\
+Example: CFLAGS += -DWITH\_ROTARY\_CHECK
+
+ \item[NO\_FREQ\_COUNTER]
+With this option you can deselect the frequency counter function of the tester.
+This is especially useful if the pin PD4 (ATmega328) can not be used together with the
+connected display.
+The corresponding entry in the list of menu functions then no longer appears and also
+Flash memory space is saved.\\
+Example: CFLAGS += -DNO\_FREQ\_COUNTER
+
+ \item[WITH\_FREQUENCY\_DIVIDER]
+With this option the menu is expanded by a selectable prescaler for the frequency counter.
+The scaler can be selected to 1:1, 1:2, 1:4, 1:8, 1:16, 1:32, 1:64 and 1:128 .
+This option is only useful, if a external prescaler can be connected to the frequency input of the tester.
+The shown frequencies and periodes of the measurements will respect the selected scaling factor.\\
+Example: CFLAGS += -DWITH\_FREQUENCY\_DIVIDER
+
   \item[WITH\_SamplingADC] With this option set, the tester make use of the sampling method of ADC in special cases.
 By shifting the sampling time of the ADC with increments of 1, 4 or 16 processor clock intervals for repeatable signals
 fast changes of voltages can be monitored.
@@ -302,6 +343,11 @@ Example: CFLAGS += -DWITH\_UJT
 This option enables a additional test for ''Programmable Unijunction Transistor''.
 Without this option PUTs are usually detected as Bipolar Junction Transistor.\\
 Example: CFLAGS += -DWITH\_PUT
+
+ \item[FET\_Idss]
+This option enables additional measurements to compute the drain current Idss, if the estimation is not
+above \(60mA\). The estimation and calculation is done with a assumed quadratical current propagation.\\
+Example: CFLAGS += -DFET\_Idss
 
   \item[FREQUENCY\_50HZ] At the end of selftest a 50~Hz Signal will be generated on Port~2 and Port~3 for up to one minute.
  This option should be set only for special cases to check the delay function.\\
@@ -489,6 +535,24 @@ functions are limited in time. With the ''DC\_Pwr\_Mode'' the tester runs the ad
 Because there is no DC-DC converter operating with \(0.9V\) input voltage,
 the ''DC\_Pwr\_Mode'' is also entered, if the battery voltage is detected below \(0.9V\). \\
 Example: CFLAGS += -DDC\_PWR=9500
+
+ \item[BAT\_NUMERATOR] defines the numerator of a fraction used for scaling the input voltage to get the right
+battery voltage.
+For a normal voltage divider build with a \(10 k\Omega\) and a \(3.3 k\Omega\) resistor you get a fraction 
+of (10000 + 3300)/3300. 
+You should reduce the fraction to 133/33 .\\
+Example: CFLAGS += -DBAT\_NUMERATOR=133
+
+ \item[BAT\_DENOMINATOR] specifies the denominator of a fraction, which is used to scale the voltage value.\\
+Example: CFLAGS += -DBAT\_DENOMINATOR=33
+
+ \item[EXT\_NUMERATOR] defines the numerator of a fraction used for scaling the external input voltage.
+ With a voltage divider build with a \(180 k\Omega\) and a \(20 k\Omega\) resistor the fraction is (180000 + 20000)/20000 .
+You should reduce the fraction to 10/1 .\\
+Example: CFLAGS += -DEXT\_NUMERATOR=10
+
+ \item[EXT\_DENOMINATOR] specifies the denominator for the fraction to scale the external voltage. \\
+Example: CFLAGS += -DEXT\_DENOMINATOR=1
 
   \item[INHIBIT\_SLEEP\_MODE] disable the use of the sleep mode of the processor.
 Normaly the software uses for longer work breaks the sleep mode to avoid unneeded current consumption.

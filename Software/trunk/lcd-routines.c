@@ -149,7 +149,6 @@ void lcd_next_line(uint8_t xx) {
    }
    lcd_set_cursor((uint8_t)(lcd_text_line * PAGES_PER_LINE), xx);
 #ifdef WITH_UART
-//   uart_putc(' ');
    uart_newline();		// start of new line
  #if WITH_UART == 2		// MAURO
    uart_putc('1'+lcd_text_line);	// MAURO
@@ -161,6 +160,8 @@ void lcd_next_line(uint8_t xx) {
 void lcd_next_line_wait(uint8_t xx) {
    lcd_next_line(xx);
    wait_for_key_5s_line2();		// wait 5s and clear last line
+   if (lcd_text_line > 2)
+     uart_newline();		// MAURO  ('H')
 }
 #endif
 
@@ -211,15 +212,14 @@ void lcd_restore_position(void) {
 // send a 24x32 icon to one quarter of the screen
 // the number temp1 is the icon-number  from 0 to 15
 // with offset  0 the icon is written to the right lower quarter of the screen
-// with offset 16, 0x10 the icon is written to the left lower quarter of the screen
-// with offset 32, 0x20 the icon is written to the right upper quarter of the screen
-// with offset 48, 0x30 the icon is written to the left upper quarter of the screen
+// with offset  64, 0x40 the icon is written to the left lower quarter of the screen
+// with offset 128, 0x80 the icon is written to the right upper quarter of the screen
+// with offset 192, 0xC0 the icon is written to the left upper quarter of the screen
 // to the left of the quarter are at least 8 pixels free
 // to the right of the quarter are 16 pixels free  (8+24+16 < (SCREEN_WIDTH/2)
 #if (LCD_GRAPHIC_TYPE != 0) && (WITH_GRAPHICS != 0) 
 void lcd_big_icon(unsigned char temp1) {
  uint8_t *pfont;	// pointer to the start of font data
- uint8_t pos_nr;
  #define TP_WIDTH 8	/* specifies the width of the Test Port number */
  #define DIODE_WIDTH 5    /* diode is 8 pixel width, but TP overlap the diode images with 3 pixels */
  #if SCREEN_HEIGHT > 64
@@ -227,12 +227,14 @@ void lcd_big_icon(unsigned char temp1) {
  #else
   #define HALF_SCREEN_HEIGHT (SCREEN_HEIGHT / 2)
  #endif
- pfont = (uint8_t *) bigfont[temp1 & 0x0f];	// first byte of character data
- pos_nr = temp1 & 0x30;	// filter the position Information
+ #ifdef LCD_ICON_COLOR
+ lcd_fg_color.w = LCD_ICON_COLOR;
+ #endif
+ pfont = (uint8_t *) bigfont[temp1 & 0x3f];	// first byte of character data
  icon_xx =  TP_WIDTH;		// left side 
- if ((pos_nr & 0x10) == 0) icon_xx += (SCREEN_WIDTH / (ONE_B/4)); // right side
+ if ((temp1 & 0x40) == 0) icon_xx += (SCREEN_WIDTH / (ONE_B/4)); // right side
  icon_yy = 0;
- if (pos_nr < 0x20) {
+ if ((temp1 & 0x80) == 0) {
    icon_yy = HALF_SCREEN_HEIGHT;	// lower half of display
    // shift lower icon position to the right
    icon_xx +=  (SCREEN_WIDTH / (ONE_B/4))  - ICON_WIDTH - TP_WIDTH - TP_WIDTH - DIODE_WIDTH;
@@ -298,6 +300,13 @@ void lcd_write_word(unsigned int xx) {
 void lcd_data(unsigned char temp1) {
 /* -------------------------------------------------------------------------- */
 
+#ifdef LCD_ICON_COLOR
+ #ifdef LCD_CHANGE_COLOR
+ lcd_fg_color.w = lcd_fg2_color.w;
+ #else
+ lcd_fg_color.w = LCD_FG_COLOR;
+ #endif
+#endif
 _lcd_column++;
 #if (LCD_GRAPHIC_TYPE != 0)
  uint8_t *pfont;
@@ -352,13 +361,14 @@ _xpos += FONT_WIDTH;		// move pointer to the next character position
     	uart_putc(temp1);
  }
 #endif
+ wdt_reset();
 } /* end lcd_data() */
  
 // sends a command to the LCD
  
 void lcd_command(unsigned char temp1) {
 	_lcd_hw_write(0x00,temp1);
-#if ((LCD_ST_TYPE == 7565) || (LCD_ST_TYPE == 1306) || (LCD_ST_TYPE == 7108) || (LCD_ST_TYPE == 7920) || (LCD_ST_TYPE == 8812) || (LCD_ST_TYPE == 8814) || (LCD_ST_TYPE == 7735) || (LCD_ST_TYPE == 9163))
+#if ((LCD_ST_TYPE == 7565) || (LCD_ST_TYPE == 1306) || (LCD_ST_TYPE == 7108) || (LCD_ST_TYPE == 7920) || (LCD_ST_TYPE == 8812) || (LCD_ST_TYPE == 8814) || (LCD_ST_TYPE == 7735) || (LCD_ST_TYPE == 9163) || (LCD_ST_TYPE == 9341) || (LCD_ST_TYPE == 1327))
  ;
 #else
 	wait50us();		// wait at least 50us after every instruction for character LCD
@@ -576,8 +586,13 @@ void lcd_init(void) {
  #ifdef LCD_CHANGE_COLOR
    lcd_bg_color.b[0] = eeprom_read_byte(&EE_BG_COLOR1);
    lcd_bg_color.b[1] = eeprom_read_byte(&EE_BG_COLOR2);
+  #ifdef LCD_ICON_COLOR
+   lcd_fg2_color.b[0] = eeprom_read_byte(&EE_FG_COLOR1);
+   lcd_fg2_color.b[1] = eeprom_read_byte(&EE_FG_COLOR2);
+  #else
    lcd_fg_color.b[0] = eeprom_read_byte(&EE_FG_COLOR1);
    lcd_fg_color.b[1] = eeprom_read_byte(&EE_FG_COLOR2);
+  #endif
  #endif
  #if LCD_SCREEN_ROTATE != 0
     lcd_write_data(0x3c);	 	// MV=exchange xy, ML=Vertical refresh, RGB=BGR color,MH=Refresh right to left
@@ -656,7 +671,84 @@ void lcd_init(void) {
 
   /* we don't clear the display now, because it's quite slow */
 
-#else    /* !(LCD_ST_TYPE == 7565 | 1306) | 7108 | 7920 | 7108 | 8812 | 8814 | 7735 | 9163) */
+/* -------------------------------------------------------------------------- */
+#elif (LCD_ST_TYPE == 1327)   /* !(LCD_ST_TYPE == 7565 | 1306 | 8812 | 8814 | 7920 | 7108 | 7735 | 9163 | 9341) */
+/* -------------------------------------------------------------------------- */
+/* init sequence for SSD1327 is taken from a arduino example */
+
+//  OLED_RST_1;
+//  wait_about100ms();
+//  OLED_RST_0;
+//  wait_about100ms();
+//  OLED_RST_1;
+//  wait_about100ms();
+  lcd_command(CMD_DISPLAY_OFF);	//--turn off oled panel
+
+  lcd_command(CMD_CASET);	// 0x15 set column address
+  lcd_command(0);		// start column 0
+  lcd_command((SCREEN_WIDTH/2)-1);    //end column 127
+
+  lcd_command(CMD_RASET);	// 0x75 set row address
+  lcd_command(0);		// start row 0
+  lcd_command(SCREEN_HEIGHT-1);    // end row 127
+
+  lcd_command(CMD_SET_CONTRAST_CONTROL);	// 0x81 set contrast control
+  lcd_command(0x80);
+
+  lcd_command(0xa0);    // set Re-map
+  lcd_command(0x51);   // COM Split Odd Even, COM Re-map, Column Address Re-map
+
+//  lcd_command(0xa1);    //start line
+//  lcd_command(0x00);		// 0 (Reset Value)
+
+//  lcd_command(0xa2);    //display offset
+//  lcd_command(0x00);		// 0 (Reset Value)
+
+//  lcd_command(0xa4);    // normal display (Reset Value)
+//  lcd_command(0xa8);    //set multiplex ratio
+//  lcd_command(0x7f);		// 127 (Reset Value)
+
+//  lcd_command(0xb1);    //set phase length
+//  lcd_command(0xf1);		// (0x74 Reset Value)
+
+  lcd_command(0xb3);    //set dclk
+  lcd_command(0x00);    // (0x00 Reset Value) 80Hz:0xc1 90Hz:0xe1, 100Hz:0x00, 110Hz:0x30, 120Hz:0x50, 130Hz:0x70
+
+//  lcd_command(0xab);    // Function Selection A
+//  lcd_command(0x01);    // Enable internal Vdd regulator  (Reset Value)
+
+//  lcd_command(0xb6);    //set second precharge Period
+//  lcd_command(0x0f);		// (0x04 Reset Value)
+
+  lcd_command(0xbe);    // set Vcomh  (0-7)
+  lcd_command(0x0f);		// (0x05 Reset Value 0.82*VCC)
+
+  lcd_command(0xbc);    // set Precharge voltage (0-8)
+  lcd_command(0x08);		// Vcomh (0x05 Reset Value 0.5*VCC)
+
+  lcd_command(0xd5);    // Function Selection B
+  lcd_command(0x62);		// Enable second precharge (0x60 Reset Value)
+
+//  lcd_command(0xfd);	  // Set Command Lock
+//  lcd_command(0x12);		// Unlock OLED driver IC (0x12 Reset Value)
+// ---
+ //Set the display scan and color transfer modes
+  lcd_command(0xa0);	  // set Remap
+			  // 0x40 Enable COM Split Odd Even
+			  // 0x10 Enable COM Remap, Enable
+			  // 0x04 Enable Horizontal Address Increment
+			  // 0x02 Enable Nibble Remap
+			  // 0x01 Enable Column Address Remap
+  lcd_command(0x40);	
+
+  lcd_clear();		// clear the display content
+  //Turn on the OLED display
+  lcd_command(CMD_DISPLAY_ON);	  // 0xaf set Display ON
+//  lcd_command(0xa4);	// all pixels normal
+
+
+
+#else    /* !(LCD_ST_TYPE == 7565 | 1306) | 7108 | 7920 | 7108 | 8812 | 8814 | 7735 | 9163 | 1327) */
 /* must be a character display */
    wait_about100ms();
    // to initialise, send 3 times to be sure to be in 8 Bit mode
@@ -772,7 +864,7 @@ void lcd_init(void) {
 #endif
 }	/* end lcd_init */
  
-#if ((LCD_ST_TYPE == 7565) || (LCD_ST_TYPE == 1306) || (LCD_ST_TYPE == 7108))
+#if ((LCD_ST_TYPE == 7565) || (LCD_ST_TYPE == 1306) || (LCR_ST_TYPE == 1327) || (LCD_ST_TYPE == 7108))
 void lcd_powersave(void) {
      lcd_command(CMD_DISPLAY_OFF);
  #if ((LCD_ST_TYPE == 7565) || (LCD_ST_TYPE == 1306))
@@ -871,6 +963,23 @@ void lcd_clear(void) {
  #endif
      }
    }
+#elif (LCD_ST_TYPE == 1327)
+   // clear display for the ST1327 color LCD controller
+   unsigned int p;
+   lcd_command(CMD_CASET);
+    lcd_command(0);	// set start column
+    lcd_command((SCREEN_WIDTH/2)-1);	// set end column
+    lcd_command(0);	// set start column
+   lcd_command(CMD_RASET);
+    lcd_command(0);	// set start row
+    lcd_command(SCREEN_HEIGHT-1);	// set end row
+   for (p = 0; p < ((SCREEN_WIDTH/4)*SCREEN_HEIGHT); p++) {
+ #ifdef LCD_CHANGE_COLOR
+       lcd_write_word(0xffff);		// 4 white pixels
+ #else
+       lcd_write_word(0);		// 4 black pixels
+ #endif
+     }
 #else
    lcd_command(CMD_CLEAR_DISPLAY);
    wait_about10ms();
@@ -1072,9 +1181,9 @@ unsigned char options, unsigned char width, unsigned char height) {
          }
   #if (LCD_ST_TYPE == 8812)
    #if (LCD_ST7565_V_FLIP == 1)
-         if (((options & OPT_VREVERSE) == OPT_VREVERSE))
+         if ((options & OPT_VREVERSE) == OPT_VREVERSE)
    #else
-         if (!(options & OPT_VREVERSE) == OPT_VREVERSE)
+         if (!((options & OPT_VREVERSE) == OPT_VREVERSE))
    #endif
   #else
    #if (LCD_ST7565_V_FLIP == 1)
@@ -1226,7 +1335,7 @@ unsigned char options, unsigned char width, unsigned char height) {
             {
               if ((byte & 0x80) != 0) {
 	         // set pixel to foreground color
-  #ifdef LCD_CHANGE_COLOR
+  #if defined(LCD_CHANGE_COLOR) || defined(LCD_ICON_COLOR)
                  lcd_write_word(lcd_fg_color.w);	// 5 red / 6 green / 5 blue pixel 
    #if ONE_B == 16
                  lcd_write_word(lcd_fg_color.w);	// 5 red / 6 green / 5 blue pixel 
@@ -1261,8 +1370,98 @@ unsigned char options, unsigned char width, unsigned char height) {
          pdata += width;
       }
    } /* end for page */
+#elif (LCD_ST_TYPE == 1327)
 /* ------------------------------------------------------------------------------- */
-#endif /* (LCD_ST_TYPE == 7565 || 1306 || 7108 || 7920 || 8812 || 8814 */
+// void lcd_set_pixels(const unsigned char *pdata, unsigned char x, unsigned char y,
+// unsigned char options, unsigned char width, unsigned char height) 
+  // support for gray OLED display
+  // x and y are interchanged because the x-address can not address any column (only pairs)
+   if (((x+width) > SCREEN_WIDTH) || ((y+height) > SCREEN_HEIGHT )) return;
+   unsigned int page;
+   unsigned int pagemax;
+   unsigned char offset;
+   unsigned char xx;
+
+   page = y/2;		
+   pagemax = (y + height - 1)/2;
+   if (pagemax >= SCREEN_HEIGHT/2)
+      pagemax = (SCREEN_HEIGHT - 1)/2;	// limit to last page of screen
+
+   if ((options & OPT_VREVERSE) == OPT_VREVERSE)
+      pdata += ((height-1)>>3) * width; /* begin of the last line of data */
+
+   for (; page <= pagemax; page+=4)
+   { 
+  #if (LCD_ST7565_H_FLIP == 1)
+      xx = (SCREEN_HEIGHT - x - width);
+  #else
+      xx = x;
+  #endif
+      for (offset = 0; offset < width; offset++)
+      {
+         unsigned char byte;
+//         lcd_command(CMD_RASET);		// set column range
+         lcd_command(CMD_CASET);		// set row range
+  #if (LCD_ST7565_V_FLIP == 1)
+         lcd_command((SCREEN_HEIGHT-2)/2 - page - 3);
+         lcd_command((SCREEN_HEIGHT-2)/2 - page);
+  #else
+         lcd_command(page);
+         lcd_command(page+3);
+  #endif
+//         lcd_command(CMD_CASET);		// set row range
+         lcd_command(CMD_RASET);		// set column range
+         lcd_command(xx + offset);
+         lcd_command(xx + offset);
+
+  #if (LCD_ST7565_H_FLIP == 1)
+         if (!((options & OPT_HREVERSE) == OPT_HREVERSE))
+  #else
+         if ((options & OPT_HREVERSE) == OPT_HREVERSE)
+  #endif
+            { byte = pgm_read_byte(pdata + width - offset - 1);
+         } else {
+            byte = pgm_read_byte(pdata + offset);
+         }
+  #if (LCD_ST7565_V_FLIP == 1)
+         if (((options & OPT_VREVERSE) == OPT_VREVERSE))
+  #else
+         if (!((options & OPT_VREVERSE) == OPT_VREVERSE))
+  #endif
+            { byte = reverse_byte(byte);
+         }
+//      if ((options & OPT_CINVERSE) == OPT_CINVERSE) {
+//         byte = ~byte;
+//      }
+         unsigned char bb;
+         unsigned char twobits;
+         for (bb=0; bb<4; bb++)
+         {
+           if ((byte & 0xc0) == 0xc0) {
+             // set two pixels to foreground color
+             twobits = 0xff;
+           } else if ((byte & 0xc0) == 0x80) {
+	     // set only first bit to foreground color
+             twobits = 0x0f;
+           } else if ((byte & 0xc0) == 0x40) {
+	     // set only second bit to foreground color
+             twobits = 0xf0;
+           } else {
+	     // set two pixels to background color
+             twobits = 0x00;
+           }
+           lcd_write_data(twobits);
+           byte *= 4;		// next two bits to 2**7, 2**6 position
+         } /* end for bb */
+      } /* end for offset */
+      if ((options & OPT_VREVERSE) == OPT_VREVERSE) {
+         pdata -= width;
+      } else {
+         pdata += width;
+      }
+   } /* end for page */
+/* ------------------------------------------------------------------------------- */
+#endif /* (LCD_ST_TYPE == 7565 || 1306 || 7108 || 7920 || 8812 || 8814 ... */
 }
 /* ******************************************************************************* */
 void lcd_show_Cg(void) {
@@ -1277,6 +1476,16 @@ void lcd_show_Cg(void) {
        DisplayValue(cap.cval,cap.cpre,'F',3);
 #endif
 }
+#ifdef SHOW_R_DS
+void lcd_show_rds(uint8_t xpos)
+{
+       if ((PartMode&0x0f) == PART_MODE_MOS) {     /* kein JFET or IGBT */
+          lcd_next_line_wait(xpos);
+          lcd_MEM_string(RDS_str);		// "RDS=
+          DisplayValue16(_trans->uBE,-1,LCD_CHAR_OMEGA,2);	// Drain-Source resistance
+       }
+}
+#endif
 
 /* ******************************************************************************* */
 #if (LCD_ST_TYPE == 7920)

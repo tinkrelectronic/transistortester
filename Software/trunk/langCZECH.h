@@ -1,14 +1,14 @@
 #if defined(LANG_CZECH)
 //const unsigned char TestRunning[] MEM_TEXT = "Probíhá meøení..";
-   const unsigned char TestRunning[] MEM_TEXT = {'P','r','o','b',Cz_i,'h',Cz_a,' ','m',Cz_ee,Cz_r,'e','n',Cz_i,'.','.',0};
+   const unsigned char TestRunning[] MEM_TEXT = {'P','r','o','b',Cz_i,'h',Cz_a,' ','m',Cz_ee,Cz_r,'e','n',Cz_i,0};
 //const unsigned char BatWeak[] MEM_TEXT = "slabá"; //€€";
-   const unsigned char BatWeak[] MEM_TEXT = {'s','l','a','b',Cz_a,0}; //€€";
+   const unsigned char BatWeak[] MEM_TEXT = {'s','l','a','b',Cz_a,0}; //slabá";
 //const unsigned char BatEmpty[] MEM_TEXT = "vybitá";
    const unsigned char BatEmpty[] MEM_TEXT = {'v','y','b','i','t',Cz_a,0};
 //const unsigned char TestFailed2[] MEM_TEXT = "vadná "; //€€€€€€";
-   const unsigned char TestFailed2[] MEM_TEXT = {'v','a','d','n',Cz_a,' ',0}; //€€€€€€";
+   const unsigned char TestFailed2[] MEM_TEXT = {'v','a','d','n',Cz_a,' ',0}; //vadná";
 //const unsigned char Bauteil[] MEM_TEXT = "souèástka"; //€";
-   const unsigned char Bauteil[] MEM_TEXT = {'s','o','u',Cz_c,Cz_a,'s','t','k','a',0}; //€";
+   const unsigned char Bauteil[] MEM_TEXT = {'s','o','u',Cz_c,Cz_a,'s','t','k','a',0}; //souèástka";
 //const unsigned char Diode[] MEM_TEXT = "Dioda: ";
    const unsigned char Triac[] MEM_TEXT = "Triak";
    const unsigned char Thyristor[] MEM_TEXT = "Tyristor"; //€";
@@ -16,8 +16,9 @@
    const unsigned char Unknown[] MEM_TEXT = {' ','n','e','z','n',Cz_a,'m',Cz_a,0}; //€";
 //const unsigned char TestFailed1[] MEM_TEXT = "Zadná, neznamá"; //€€";
    const unsigned char TestFailed1[] MEM_TEXT = {Cz_Z,Cz_a,'d','n',Cz_a,' ','n','e','z','n',Cz_a,'m',Cz_a,0}; //€€";
-//const unsigned char OrBroken[] MEM_TEXT = "nebo vadná "; //€€";
-   const unsigned char OrBroken[] MEM_TEXT = {'n','e','b','o',' ','v','a','d','n',Cz_a,' ',0}; //€€";
+//   const unsigned char OrBroken[] MEM_TEXT = {'n','e','b','o',' ','v','a','d','n',Cz_a,' ',0}; //€€";
+   const unsigned char Detected[] MEM_TEXT = {' ','d','e','t','e','k','o','v',Cz_a,'n','a'}; // " detekována"
+//   const unsigned char Detected[] MEM_TEXT = " nalezena"; 
    const unsigned char TestTimedOut[] MEM_TEXT = "Timeout!";
    #define Cathode_char 'K'
  #ifdef WITH_SELFTEST
@@ -28,7 +29,12 @@
  #ifdef WITH_MENU
    const unsigned char SELECTION_str[] MEM2_TEXT = "Vyber:";
    const unsigned char TESTER_str[] MEM2_TEXT = "Tranzistor";
+  #ifndef NO_FREQ_COUNTER
    const unsigned char FREQ_str[] MEM2_TEXT = "Frekvence";
+ #ifdef WITH_FREQUENCY_DIVIDER
+  const unsigned char FScaler_str[] MEM2_TEXT = {'f','-','p',Cz_r,'e','d','d',Cz_ee,'l','i',Cz_c,0};// " pøeddìliè"
+ #endif
+  #endif
 //const unsigned char VOLTAGE_str[] MEM2_TEXT = "Napìtí";
    const unsigned char VOLTAGE_str[] MEM2_TEXT = {'N','a','p',Cz_ee,'t',Cz_i,0};
 //const unsigned char SHOW_str[] MEM2_TEXT = "Zobrazit údaje";	// "Show data"

@@ -3,7 +3,7 @@ MKFILES = Makefile ../setup.mk ../finish.mk
 CFLAGS += -mcall-prologues
 # you can set the EFUSE_VAL to 0xfc or to 0x04, if your avrdude mask out the unused bits
 # this value enable the brown out voltage of 4.3V
-EFUSE_VAL = 0x04
+EFUSE_VAL = 0xfc
 ifeq ($(INHIBIT_SLEEP_MODE),1)
 # set the option for gcc 
 CFLAGS += -DINHIBIT_SLEEP_MODE
@@ -45,6 +45,9 @@ endif
 ifeq ($(WITH_LCD_ST7565),8814)
 CFLAGS += -DLCD_ST_TYPE=8814
 CFLAGS += -DLCD_ST7565_RESISTOR_RATIO=$(LCD_ST7565_RESISTOR_RATIO)
+endif
+ifeq ($(WITH_LCD_ST7565),1327)
+CFLAGS += -DLCD_ST_TYPE=1327
 endif
 
 ifeq ($(PARTNO),m8)
@@ -249,6 +252,46 @@ FUSES_CRY_L = -U lfuse:w:0xf7:m -U hfuse:w:0xd9:m -U efuse:w:$(EFUSE_VAL):m
 endif
 endif
 
+ifeq ($(PARTNO),m644pa)
+MCU = atmega644pa
+HEX_FLASH_FLAGS = --change-section-lma .eeprom=0x10000
+ifeq ($(OP_MHZ),1)
+# RC operation ,CLK 1MHz
+FUSES_INT = -U lfuse:w:0x62:m -U hfuse:w:0xd9:m -U efuse:w:$(EFUSE_VAL):m
+# Operation with 8MHz crystal and /8 divider , full swing crystal
+FUSES_CRY = -U lfuse:w:0x77:m -U hfuse:w:0xd9:m -U efuse:w:$(EFUSE_VAL):m
+# Operation with 8MHz crystal and /8 divider , low power
+FUSES_CRY_L = -U lfuse:w:0x77:m -U hfuse:w:0xd9:m -U efuse:w:$(EFUSE_VAL):m
+else
+# RC operation ,CLK 8MHz
+FUSES_INT = -U lfuse:w:0xe2:m -U hfuse:w:0xd9:m -U efuse:w:$(EFUSE_VAL):m
+# Operation with 8MHz crystal and /1 divider , full swing crystal
+FUSES_CRY = -U lfuse:w:0xf7:m -U hfuse:w:0xd9:m -U efuse:w:$(EFUSE_VAL):m
+# Operation with 8MHz crystal and /1 divider , low power
+FUSES_CRY_L = -U lfuse:w:0xf7:m -U hfuse:w:0xd9:m -U efuse:w:$(EFUSE_VAL):m
+endif
+endif
+
+ifeq ($(PARTNO),m1284)
+MCU = atmega1284
+HEX_FLASH_FLAGS = --change-section-lma .eeprom=0x20000
+ifeq ($(OP_MHZ),1)
+# RC operation ,CLK 1MHz
+FUSES_INT = -U lfuse:w:0x62:m -U hfuse:w:0xd9:m -U efuse:w:$(EFUSE_VAL):m
+# Operation with 8MHz crystal and /8 divider , full swing crystal
+FUSES_CRY = -U lfuse:w:0x77:m -U hfuse:w:0xd9:m -U efuse:w:$(EFUSE_VAL):m
+# Operation with 8MHz crystal and /8 divider , low power
+FUSES_CRY_L = -U lfuse:w:0x77:m -U hfuse:w:0xd9:m -U efuse:w:$(EFUSE_VAL):m
+else
+# RC operation ,CLK 8MHz
+FUSES_INT = -U lfuse:w:0xe2:m -U hfuse:w:0xd9:m -U efuse:w:$(EFUSE_VAL):m
+# Operation with 8MHz crystal and /1 divider , full swing crystal
+FUSES_CRY = -U lfuse:w:0xf7:m -U hfuse:w:0xd9:m -U efuse:w:$(EFUSE_VAL):m
+# Operation with 8MHz crystal and /1 divider , low power
+FUSES_CRY_L = -U lfuse:w:0xf7:m -U hfuse:w:0xd9:m -U efuse:w:$(EFUSE_VAL):m
+endif
+endif
+
 ifeq ($(PARTNO),m1284p)
 MCU = atmega1284p
 HEX_FLASH_FLAGS = --change-section-lma .eeprom=0x20000
@@ -335,6 +378,9 @@ ifeq ($(WITH_LCD_ST7565),8814)
 OBJECTS += lcd-draw.o
 endif
 ifeq ($(WITH_LCD_ST7565),8812)
+OBJECTS += lcd-draw.o
+endif
+ifeq ($(WITH_LCD_ST7565),1327)
 OBJECTS += lcd-draw.o
 endif
 OBJECTS += swuart.o wait1000ms.o 

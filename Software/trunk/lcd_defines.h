@@ -304,6 +304,23 @@
 	#define ST_VPA 20
 
 /* *********************************************************************************************************** */
+#elif (LCD_ST_TYPE == 1327)
+//LCD-commands
+ 	#define CMD_CASET  0x15
+ 	#define CMD_RASET  0x75
+	#define CMD_SET_CONTRAST_CONTROL 0x81
+        #define CMD_DISPLAY_OFF 0xae
+	#define CMD_DISPLAY_ON 0xaf
+//Makros for LCD
+	#define lcd_write_data(data)                   _lcd_hw_write(0x01, data);
+	#define lcd_cursor_on()  // ignored
+	#define lcd_cursor_off() // ignored
+	#undef SCREEN_HEIGHT
+        #define SCREEN_HEIGHT 128
+	#undef SCREEN_WIDTH
+	#define SCREEN_WIDTH 128
+
+/* *********************************************************************************************************** */
 #else /* not ((LCD_ST_TYPE == 7565 || 1306 || 7920 || 7108 || 8812 || 8814 || 7735 || 9341 || 9163) */
 /* must be a character display! */
 	#define lcd_write_data(data)                   _lcd_hw_write(0x01, data); wait50us();
@@ -452,24 +469,37 @@
  #define Cz_y	0x1d
  #define Cz_z	0x1e
  #define Cz_Z	0x1f
-#else
-  // use ASCII replacements for czech characters
-  #define Cz_a	'a'
-  #define Cz_c	'c'
-  #define Cz_d	'd'
-  #define Cz_e	'e'
-  #define Cz_ee	'e'
-  #define Cz_i	'i'
-  #define Cz_n	'n'
-  #define Cz_o	'o'
-  #define Cz_r	'r'
-  #define Cz_s	's'
-  #define Cz_t	't'
-  #define Cz_u	'u'
-  #define Cz_uu	'u'
-  #define Cz_y	'y'
-  #define Cz_z	'z'
-  #define Cz_Z	'Z'
+ // Caractères accentues francais
+ #define Fr_a_grave	0x10
+ #define Fr_a_circ	0x11
+ #define Fr_e_aigu	0x12
+ #define Fr_e_circ	0x13
+ #define Fr_e_grave 0x14 
+#else 	
+ // use ASCII replacements for czech characters
+ #define Cz_a	'a'
+ #define Cz_c	'c'
+ #define Cz_d	'd'
+ #define Cz_e	'e'
+ #define Cz_ee	'e'
+ #define Cz_i	'i'
+ #define Cz_n	'n'
+ #define Cz_o	'o'
+ #define Cz_r	'r'
+ #define Cz_s	's'
+ #define Cz_t	't'
+ #define Cz_u	'u'
+ #define Cz_uu	'u'
+ #define Cz_y	'y'
+ #define Cz_z	'z'
+ #define Cz_Z	'Z'
+ // Caractères ASCII de remplacement pour accentues francais
+ #define Fr_a_grave	'a'
+ #define Fr_a_circ	'a'
+ #define Fr_e_aigu	'e'
+ #define Fr_e_circ	'e'
+ #define Fr_e_grave 'e' 
+
 #endif
 
 //defines for the big special "character" set, the graphical symbols
@@ -491,7 +521,7 @@
 #define DIODES_C_A_A_C 13
 #define RESISTORS 14
 // define the positioning bits for lcd_big_icon
-#define LCD_UPPER_LEFT 0x30
-#define LCD_UPPER_RIGHT 0x20
-#define LCD_LOWER_LEFT 0x10
+#define LCD_UPPER_LEFT 0xC0
+#define LCD_UPPER_RIGHT 0x80
+#define LCD_LOWER_LEFT 0x40
 #define LCD_LOWER_RIGHT 0x00

@@ -87,8 +87,9 @@ const uint16_t RLtab[] MEM_TEXT = {
 //	#endif
 
 #if FLASHEND > 0x1fff
-//                                        {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63,  64,  65,  66,  67,  68,  69,  70,  71,  72,  73,  74,  75,  76,  77,  78,  79,  80,  81,  82,  83,  84,  85,  86,  87,  88,  89,  90,  91 };
- const uint16_t LogTab[] PROGMEM = {0, 20, 41, 62, 83, 105, 128, 151, 174, 198, 223, 248, 274, 301, 329, 357, 386, 416, 446, 478, 511, 545, 580, 616, 654, 693, 734, 777, 821, 868, 916, 968, 1022, 1079, 1139, 1204, 1273, 1347, 1427, 1514, 1609, 1715, 1833, 1966, 2120, 2303, 2526 };
+/* table for function -1000*log(1 - (permil/1000)) , distance is 20 permil */
+//                                 {0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,  32,  33,  34,  35,  36,  37,  38,  39,  40,  41,  42,  43,  44,  45,  46,  47,  48,  49,  50};
+ const uint16_t LogTab[] PROGMEM = {0, 20, 41, 62, 83,105,128,151,174,198,223,248,274,301,329,357,386,416,446,478,511,545,580,616,654,693,734,777,821,868,916,968,1022,1079,1139,1204,1273,1347,1427,1514,1609,1715,1833,1966,2120,2303,2526,2813,3219,3912,7065 }; /* last value is replaced by  (-1000*ln(0.001)-3912)/19*20 + 3912 */
 
 #endif
 
@@ -131,6 +132,7 @@ End of configuration
 
 /*Strings in PROGMEM or in EEprom
 */
+#include "langFRANCAIS.h"
 #include "langGERMAN.h"
 #include "langITALIAN.h"
 #include "langPOLISH.h"
@@ -144,11 +146,12 @@ End of configuration
 #include "langUKRAINIAN.h"
 #include "langHUNGARIAN.h"
 #include "langLITHUANIAN.h"
+#include "langDANISH.h"
 
 // All languages must be placed before the english text.
 // If none is actually selected, LANG_SELECTED is not set.
 #ifndef LANG_SELECTED		//default language is english
-   const unsigned char TestRunning[] MEM_TEXT = "Testing...";
+   const unsigned char TestRunning[] MEM_TEXT = "Testing.";
    const unsigned char BatWeak[] MEM_TEXT = "weak";
    const unsigned char BatEmpty[] MEM_TEXT = "empty!";
    const unsigned char TestFailed2[] MEM_TEXT = "damaged ";
@@ -158,7 +161,7 @@ End of configuration
    const unsigned char Thyristor[] MEM_TEXT = "Thyrist.";
    const unsigned char Unknown[] MEM_TEXT = " unknown";
    const unsigned char TestFailed1[] MEM_TEXT = "No, unknown, or";
-   const unsigned char OrBroken[] MEM_TEXT = "or damaged ";
+   const unsigned char Detected[] MEM_TEXT = " detected";
    const unsigned char TestTimedOut[] MEM_TEXT = "Timeout!";
    #define Cathode_char 'C'
  #ifdef WITH_SELFTEST
@@ -169,7 +172,6 @@ End of configuration
  #ifdef WITH_MENU
    const unsigned char SELECTION_str[] MEM2_TEXT = "Selection:";
    const unsigned char TESTER_str[] MEM2_TEXT = "Transistor";
-   const unsigned char FREQ_str[] MEM2_TEXT = "Frequency";
    const unsigned char VOLTAGE_str[] MEM2_TEXT = "Voltage";
    const unsigned char SHOW_str[] MEM2_TEXT = "Show data";	// "Show data"
    const unsigned char OFF_str[] MEM2_TEXT = "Switch off";
@@ -186,6 +188,12 @@ End of configuration
    const unsigned char TURN_str[] MEM2_TEXT = "turn!";	
    const unsigned char FULLCHECK_str[] MEM2_TEXT = "Selftest";
    const unsigned char SHORT_PROBES_str[] MEM2_TEXT = "short Probes!";
+#ifndef NO_FREQ_COUNTER
+   const unsigned char FREQ_str[] MEM2_TEXT = "Frequency";
+ #ifdef WITH_FREQUENCY_DIVIDER
+   const unsigned char FScaler_str[] MEM2_TEXT = "F-Scaler";
+ #endif
+#endif
   #if PROCESSOR_TYP == 644
    const unsigned char HFREQ_str[] MEM2_TEXT = "Frequency > 2MHz";
    const unsigned char H_CRYSTAL_str[] MEM2_TEXT = "HF quartz";
@@ -206,7 +214,10 @@ End of configuration
  const unsigned char Bat_str[] MEM_TEXT = "Bat. ";
  const unsigned char OK_str[] MEM_TEXT = "OK";
 #if FLASHEND > 0x1fff
- const unsigned char DC_Pwr_Mode_str[] MEM_TEXT = "DC Pwr Mode";
+ #ifndef DC_PWR_TEXT 
+  #define DC_PWR_TEXT "DC Pwr Mode"
+ #endif
+ const unsigned char DC_Pwr_Mode_str[] MEM_TEXT = DC_PWR_TEXT;
 #endif
  const unsigned char mosfet_str[] MEM_TEXT = "-MOS";
  const unsigned char jfet_str[] MEM_TEXT = "JFET";
@@ -347,7 +358,7 @@ End of configuration
  const unsigned char Inductor_str[] MEM_TEXT = {LCD_CHAR_LINE1, LCD_CHAR_INDUCTOR1, LCD_CHAR_INDUCTOR2,LCD_CHAR_LINE1,0};
 #endif
 #if defined (WITH_SELFTEST) || !defined (BAT_CHECK)
- const unsigned char VERSION_str[] MEM_TEXT = "Version1.13k";
+ const unsigned char VERSION_str[] MEM_TEXT = "Version 1.13k";
 #endif
 #ifdef SHOW_ICE
  const unsigned char ICE0_str[] MEM2_TEXT = "ICE0=";
@@ -492,7 +503,7 @@ const unsigned char RESIS_13_str[] MEM2_TEXT = {'1'+TP1,LCD_CHAR_LINE1, LCD_CHAR
 #endif
 
 #ifdef SamplingADC
- const unsigned char cap_for_l_meas_str[] MEM2_TEXT = {'1',LCD_CHAR_LINE1,LCD_CHAR_CAP,LCD_CHAR_LINE1,'3',' ','1','0','-','3','0','n','F','(','L',')',0};
+ const unsigned char cap_for_l_meas_str[] MEM2_TEXT = {'1',LCD_CHAR_LINE1,LCD_CHAR_CAP,LCD_CHAR_LINE1,'3',' ','4','-','3','0','n','F','(','L',')',0};
 #endif
 
 //End of EEPROM-Strings
@@ -512,6 +523,9 @@ const unsigned char RESIS_13_str[] MEM2_TEXT = {'1'+TP1,LCD_CHAR_LINE1, LCD_CHAR
   extern const unsigned char SELECTION_str[] MEM2_TEXT ;
   extern const unsigned char TESTER_str[] MEM2_TEXT ;
   extern const unsigned char FREQ_str[] MEM2_TEXT;
+ #ifdef WITH_FREQUENCY_DIVIDER
+   extern const unsigned char FScaler_str[] MEM2_TEXT;
+ #endif
   extern const unsigned char VOLTAGE_str[] MEM2_TEXT ;
   extern const unsigned char SHOW_str[] MEM2_TEXT ;
   extern const unsigned char OFF_str[] MEM2_TEXT ;

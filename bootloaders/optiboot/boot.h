@@ -1,3 +1,9 @@
+/* Modified to use with predefined RAMPZ value.*/
+/* K.-H. Kuebbeler  */
+/* The RAMPZ part of the address is easier to handle outside */
+/* of the Macros boot_page_fill and boot_page_erase. */
+/* so the address field is allways a 16-Bit value */
+
 /* Modified to use out for SPM access
 ** Peter Knight, Optiboot project http://optiboot.googlecode.com
 **
@@ -120,10 +126,12 @@
 /* Check for SPM Control Register in processor. */
 #if defined (SPMCSR)
 #  define __SPM_REG    SPMCSR
-#elif defined (SPMCR)
-#  define __SPM_REG    SPMCR
 #else
+ #ifdef SPMCR
+#  define __SPM_REG    SPMCR
+ #else
 #  error AVR processor does not provide bootloader support!
+ #endif
 #endif
 
 
@@ -265,17 +273,15 @@
 (__extension__({                                 \
     __asm__ __volatile__                         \
     (                                            \
-        "movw  r0, %4\n\t"                       \
-        "movw r30, %A3\n\t"                      \
-        "sts %1, %C3\n\t"                        \
-        "sts %0, %2\n\t"                         \
+        "movw  r0, %3\n\t"                       \
+        "movw r30, %A2\n\t"                      \
+        "sts %0, %1\n\t"                         \
         "spm\n\t"                                \
         "clr  r1\n\t"                            \
         :                                        \
         : "i" (_SFR_MEM_ADDR(__SPM_REG)),        \
-          "i" (_SFR_MEM_ADDR(RAMPZ)),            \
           "r" ((uint8_t)__BOOT_PAGE_FILL),       \
-          "r" ((uint32_t)address),               \
+          "r" ((uint16_t)address),               \
           "r" ((uint16_t)data)                   \
         : "r0", "r30", "r31"                     \
     );                                           \
@@ -285,17 +291,15 @@
 (__extension__({                                 \
     __asm__ __volatile__                         \
     (                                            \
-        "movw  r0, %4\n\t"                       \
-        "movw r30, %A3\n\t"                      \
-        "out %1, %C3\n\t"                        \
-        "out %0, %2\n\t"                         \
+        "movw  r0, %3\n\t"                       \
+        "movw r30, %A2\n\t"                      \
+        "out %0, %1\n\t"                         \
         "spm\n\t"                                \
         "clr  r1\n\t"                            \
         :                                        \
         : "i" (_SFR_IO_ADDR(__SPM_REG)),        \
-          "i" (_SFR_IO_ADDR(RAMPZ)),            \
           "r" ((uint8_t)__BOOT_PAGE_FILL),       \
-          "r" ((uint32_t)address),               \
+          "r" ((uint16_t)address),               \
           "r" ((uint16_t)data)                   \
         : "r0", "r30", "r31"                     \
     );                                           \
@@ -347,15 +351,13 @@
 (__extension__({                                 \
     __asm__ __volatile__                         \
     (                                            \
-        "movw r30, %A3\n\t"                      \
-        "sts  %1, %C3\n\t"                       \
-        "sts %0, %2\n\t"                         \
+        "movw r30, %2\n\t"                      \
+        "sts %0, %1\n\t"                         \
         "spm\n\t"                                \
         :                                        \
         : "i" (_SFR_MEM_ADDR(__SPM_REG)),        \
-          "i" (_SFR_MEM_ADDR(RAMPZ)),            \
           "r" ((uint8_t)__BOOT_PAGE_ERASE),      \
-          "r" ((uint32_t)address)                \
+          "r" ((uint16_t)address)                \
         : "r30", "r31"                           \
     );                                           \
 }))
@@ -363,15 +365,13 @@
 (__extension__({                                 \
     __asm__ __volatile__                         \
     (                                            \
-        "movw r30, %A3\n\t"                      \
-        "out  %1, %C3\n\t"                       \
-        "out %0, %2\n\t"                         \
+        "movw r30, %2\n\t"                      \
+        "out %0, %1\n\t"                         \
         "spm\n\t"                                \
         :                                        \
         : "i" (_SFR_IO_ADDR(__SPM_REG)),        \
-          "i" (_SFR_IO_ADDR(RAMPZ)),            \
           "r" ((uint8_t)__BOOT_PAGE_ERASE),      \
-          "r" ((uint32_t)address)                \
+          "r" ((uint16_t)address)                \
         : "r30", "r31"                           \
     );                                           \
 }))
@@ -421,15 +421,13 @@
 (__extension__({                                 \
     __asm__ __volatile__                         \
     (                                            \
-        "movw r30, %A3\n\t"                      \
-        "sts %1, %C3\n\t"                        \
-        "sts %0, %2\n\t"                         \
+        "movw r30, %2\n\t"                      \
+        "sts %0, %1\n\t"                         \
         "spm\n\t"                                \
         :                                        \
         : "i" (_SFR_MEM_ADDR(__SPM_REG)),        \
-          "i" (_SFR_MEM_ADDR(RAMPZ)),            \
           "r" ((uint8_t)__BOOT_PAGE_WRITE),      \
-          "r" ((uint32_t)address)                \
+          "r" ((uint16_t)address)                \
         : "r30", "r31"                           \
     );                                           \
 }))
@@ -437,15 +435,13 @@
 (__extension__({                                 \
     __asm__ __volatile__                         \
     (                                            \
-        "movw r30, %A3\n\t"                      \
-        "out %1, %C3\n\t"                        \
-        "out %0, %2\n\t"                         \
+        "movw r30, %2\n\t"                      \
+        "out %0, %1\n\t"                         \
         "spm\n\t"                                \
         :                                        \
         : "i" (_SFR_IO_ADDR(__SPM_REG)),        \
-          "i" (_SFR_IO_ADDR(RAMPZ)),            \
           "r" ((uint8_t)__BOOT_PAGE_WRITE),      \
-          "r" ((uint32_t)address)                \
+          "r" ((uint16_t)address)                \
         : "r30", "r31"                           \
     );                                           \
 }))
@@ -764,6 +760,15 @@
 #define boot_page_write(address)      __boot_page_write_alternate(address)
 #define boot_rww_enable()             __boot_rww_enable_alternate()
 #define boot_lock_bits_set(lock_bits) __boot_lock_bits_set_alternate(lock_bits)
+
+#elif defined(__AVR_ATmega64__) || defined(__AVR_ATmega128__)
+
+#define boot_page_fill(address, data) __boot_page_fill_normal(address, data)
+#define boot_page_erase(address)      __boot_page_erase_normal(address)
+#define boot_page_write(address)      __boot_page_write_normal(address)
+#define boot_rww_enable()             __boot_rww_enable()
+#define boot_lock_bits_set(lock_bits) __boot_lock_bits_set(lock_bits)
+
 
 #elif (FLASHEND > USHRT_MAX)
 

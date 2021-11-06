@@ -1,6 +1,6 @@
 
 #if defined(LANG_ITALIAN)		//italiano
-   const unsigned char TestRunning[] MEM_TEXT = "Analizzo..."; 
+   const unsigned char TestRunning[] MEM_TEXT = "Analizzo"; 
    const unsigned char BatWeak[] MEM_TEXT = "debole";
    const unsigned char BatEmpty[] MEM_TEXT = "esaurita!"; 
    const unsigned char TestFailed2[] MEM_TEXT = "guasto ";	//"danneggiato "; 
@@ -10,7 +10,7 @@
    const unsigned char Thyristor[] MEM_TEXT = "SCR";
    const unsigned char Unknown[] MEM_TEXT = " ignoto";		//" sconosciuto.";
    const unsigned char TestFailed1[] MEM_TEXT = "Test fallito, o";
-   const unsigned char OrBroken[] MEM_TEXT = "o guasto ";	//"o danneggiato "; 
+   const unsigned char Detected[] MEM_TEXT = " releva";
    const unsigned char TestTimedOut[] MEM_TEXT = "Timeout!";
    #define Cathode_char 'C'	/* defines the character used for cathode */
  #ifdef WITH_SELFTEST
@@ -21,7 +21,12 @@
  #ifdef WITH_MENU
    const unsigned char SELECTION_str[] MEM2_TEXT = "Selezione:";
    const unsigned char TESTER_str[] MEM2_TEXT = "Transistor";
+  #ifndef NO_FREQ_COUNTER
    const unsigned char FREQ_str[] MEM2_TEXT = "Frequenza";
+ #ifdef WITH_FREQUENCY_DIVIDER
+   const unsigned char FScaler_str[] MEM2_TEXT = "F-Scaler";
+ #endif
+  #endif
    const unsigned char VOLTAGE_str[] MEM2_TEXT = "Voltaggio";
    const unsigned char SHOW_str[] MEM2_TEXT = "Mostra dati";	// "Show data"
    const unsigned char OFF_str[] MEM2_TEXT = "Spegnere";

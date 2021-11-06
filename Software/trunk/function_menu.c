@@ -59,30 +59,89 @@
 #else
  /* no PROCESSOR_TYP == 644 , 328 */
  #define MODE_TRANS 0		/* normal TransistorTester function */
- #define MODE_FREQ 1		/* frequency measurement */
- #define MODE_FGEN 2		/* frequency generator function */
- #define MODE_PWM 3		/* Pulse Width variation function */
- #define MODE_ESR 4		/* ESR measurement in circuit */
- #define MODE_RESIS 5		/* ResistorCheck at TP1:TP3 */
- #define MODE_CAP13 6		/* Capacitor check at TP1:TP3 */
- #define MODE_BIG_CAP_CORR 7	/* Correction for big caps */
- #define NNN 7
- #ifdef WITH_ROTARY_CHECK
-  #define MODE_ROTARY 8		/* Test Rotary Switch */
-  #undef NNN
-  #define NNN 8
-  #ifdef WITH_SELFTEST
-   #define MODE_SELFTEST 9	/* full selftest function with calibration */
+ #ifdef NO_FREQ_COUNTER
+  #define MODE_FREQ 68		/* frequency measurement */
+  #define MODE_FSCALER 67	/* scaler for frequency measurement */
+  #define MODE_FGEN 1		/* frequency generator function */
+  #define MODE_PWM 2		/* Pulse Width variation function */
+  #define MODE_ESR 3		/* ESR measurement in circuit */
+  #define MODE_RESIS 4		/* ResistorCheck at TP1:TP3 */
+  #define MODE_CAP13 5		/* Capacitor check at TP1:TP3 */
+  #define MODE_BIG_CAP_CORR 6	/* Correction for big caps */
+  #define NNN 6
+  #ifdef WITH_ROTARY_CHECK
+   #define MODE_ROTARY 7		/* Test Rotary Switch */
    #undef NNN
-   #define NNN 9
+   #define NNN 7
+   #ifdef WITH_SELFTEST
+    #define MODE_SELFTEST 8	/* full selftest function with calibration */
+    #undef NNN
+    #define NNN 8
+   #endif
+  #else
+   #ifdef WITH_SELFTEST
+    #define MODE_SELFTEST 7	/* full selftest function with calibration */
+    #undef NNN
+    #define NNN 7
+   #endif
   #endif
  #else
-  #ifdef WITH_SELFTEST
-   #define MODE_SELFTEST 8	/* full selftest function with calibration */
-   #undef NNN
+  // with Frequency counter
+  #ifdef WITH_FREQUENCY_DIVIDER
+   // frequency counter with selectable scaler
+   #define MODE_FSCALER 1	/* scaler for frequency measurement */
+   #define MODE_FREQ 2		/* frequency measurement */
+   #define MODE_FGEN 3		/* frequency generator function */
+   #define MODE_PWM 4		/* Pulse Width variation function */
+   #define MODE_ESR 5		/* ESR measurement in circuit */
+   #define MODE_RESIS 6		/* ResistorCheck at TP1:TP3 */
+   #define MODE_CAP13 7		/* Capacitor check at TP1:TP3 */
+   #define MODE_BIG_CAP_CORR 8	/* Correction for big caps */
    #define NNN 8
+   #ifdef WITH_ROTARY_CHECK
+    #define MODE_ROTARY 9		/* Test Rotary Switch */
+    #undef NNN
+    #define NNN 9
+    #ifdef WITH_SELFTEST
+     #define MODE_SELFTEST 10	/* full selftest function with calibration */
+     #undef NNN
+     #define NNN 10
+    #endif
+   #else
+    #ifdef WITH_SELFTEST
+     #define MODE_SELFTEST 9	/* full selftest function with calibration */
+     #undef NNN
+     #define NNN 9
+    #endif
+   #endif
+  #else		/* no frequency scaler */
+   #define MODE_FREQ 1		/* frequency measurement */
+   #define MODE_FGEN 2		/* frequency generator function */
+   #define MODE_PWM 3		/* Pulse Width variation function */
+   #define MODE_ESR 4		/* ESR measurement in circuit */
+   #define MODE_RESIS 5		/* ResistorCheck at TP1:TP3 */
+   #define MODE_CAP13 6		/* Capacitor check at TP1:TP3 */
+   #define MODE_BIG_CAP_CORR 7	/* Correction for big caps */
+   #define NNN 7
+   #ifdef WITH_ROTARY_CHECK
+    #define MODE_ROTARY 8		/* Test Rotary Switch */
+    #undef NNN
+    #define NNN 8
+    #ifdef WITH_SELFTEST
+     #define MODE_SELFTEST 9	/* full selftest function with calibration */
+     #undef NNN
+     #define NNN 9
+    #endif
+   #else
+    #ifdef WITH_SELFTEST
+     #define MODE_SELFTEST 8	/* full selftest function with calibration */
+     #undef NNN
+     #define NNN 8
+    #endif
+   #endif
   #endif
  #endif
+
  #ifdef WITH_VEXT
   #define MODE_VEXT (NNN+1)	/* external voltage measurement and zener voltage */
   #if ((LCD_ST_TYPE == 7565) || (LCD_ST_TYPE == 1306) || (LCD_ST_TYPE == 8812) || (LCD_ST_TYPE == 8814) || defined(LCD_DOGM))
@@ -124,8 +183,12 @@
  #define MODE_OFF 66
 #endif
 
-#if LCD_LINES > 7
- #define MENU_LINES 6
+#ifndef MAX_MENU_LINES
+#define MAX_MENU_LINES 5
+#endif
+
+#if LCD_LINES > (MAX_MENU_LINES+1)
+ #define MENU_LINES MAX_MENU_LINES
 #else
  #define MENU_LINES (LCD_LINES-1)
 #endif
@@ -137,7 +200,12 @@ void do_menu(uint8_t func_number) {
 
 //    lcd_MEM2_string(DoMenu_str);	// "do menu "
 //    u2lcd(func_number);
+#ifndef NO_FREQ_COUNTER
+ #ifdef WITH_FREQUENCY_DIVIDER
+    if (func_number == MODE_FSCALER) setFScaler(); 	// set scaler to 1,2,4,8,16,32,64,128,256,512
+ #endif
     if (func_number == MODE_FREQ) GetFrequency(0);
+#endif
 #if PROCESSOR_TYP == 644
     if (func_number == MODE_HFREQ) GetFrequency(1);	// measure high frequency with 16:1 divider
     if (func_number == MODE_H_CRYSTAL) GetFrequency(5); // HF crystal input + 16:1 divider
@@ -379,7 +447,12 @@ uint8_t function_menu() {
 void message2line(uint8_t number) { 
      if (number > MODE_LAST) number -= (MODE_LAST + 1);
      if (number == MODE_TRANS) lcd_MEM2_string(TESTER_str);
+ #ifndef NO_FREQ_COUNTER
      if (number == MODE_FREQ) lcd_MEM2_string(FREQ_str);
+  #ifdef WITH_FREQUENCY_DIVIDER
+     if (number == MODE_FSCALER) lcd_MEM2_string(FScaler_str);
+  #endif
+ #endif
  #if PROCESSOR_TYP == 644
      if (number == MODE_HFREQ) lcd_MEM2_string(HFREQ_str);
      if (number == MODE_H_CRYSTAL) lcd_MEM2_string(H_CRYSTAL_str);
@@ -505,9 +578,9 @@ void show_vext() {
 #endif
   {
 #ifdef TPex2
-     lcd_clear_line1(); 	// 2 Vext measurements 
+     lcd_line1(); 	// 2 Vext measurements 
 #else
-     lcd_clear_line2();		// only one measurement use line 2
+     lcd_line2();		// only one measurement use line 2
 #endif	/* TPex2 */
      uart_newline();          // start of new measurement
      uart_newline();          // start of new measurement
@@ -517,19 +590,21 @@ void show_vext() {
   #if EXT_NUMERATOR <= (0xffff/U_VCC)
      Display_mV(Vext*EXT_NUMERATOR/EXT_DENOMINATOR,3); // Display 3 Digits of this mV units
   #else
-     Display_mV((unsigned long)Vext*EXT_NUMERATOR/EXT_DENOMINATOR,3);  // Display 3 Digits of this mV units
+     DisplayValue((unsigned long)Vext*EXT_NUMERATOR/EXT_DENOMINATOR,-3,'V',3);  // Display 3 Digits of this mV units
   #endif
+     lcd_clear_line();		// clear to end of line
 
 #ifdef TPex2
-     lcd_clear_line2();
+     lcd_line2();
      uart_newline();          // start of new measurement
      lcd_MEM_string(Vext_str);          // Vext=
      Vext = W5msReadADC(TPex2); // read external voltage 2
   #if EXT_NUMERATOR <= (0xffff/U_VCC)
      Display_mV(Vext*EXT_NUMERATOR/EXT_DENOMINATOR,3); // Display 3 Digits of this mV units
   #else
-     Display_mV((unsigned long)Vext*EXT_NUMERATOR/EXT_DENOMINATOR,3);  // Display 3 Digits of this mV units
+     DisplayValue((unsigned long)Vext*EXT_NUMERATOR/EXT_DENOMINATOR,-3,'V',3);  // Display 3 Digits of this mV units
   #endif
+     lcd_clear_line();		// clear to end of line
 #endif	/* TPex2 */
 #if defined(POWER_OFF) && defined(BAT_CHECK)
      Bat_update(times);
@@ -826,8 +901,13 @@ uint8_t max_value;
      color[c_num] &= max_value;
      if (xcol == 0) {
         // foreground color
+ #ifdef LCD_ICON_COLOR
+        lcd_fg2_color.b[1] = (color[0] << 3) | (color[1] >> 3);
+        lcd_fg2_color.b[0] = ((color[1] & 7) << 5) | (color[2] & 0x1f);
+ #else
         lcd_fg_color.b[1] = (color[0] << 3) | (color[1] >> 3);
         lcd_fg_color.b[0] = ((color[1] & 7) << 5) | (color[2] & 0x1f);
+ #endif
      } else {
         lcd_bg_color.b[1] = (color[0] << 3) | (color[1] >> 3);
         lcd_bg_color.b[0] = ((color[1] & 7) << 5) | (color[2] & 0x1f);
@@ -848,8 +928,13 @@ uint8_t max_value;
 
 //  eeprom_write_byte((uint8_t *)(&EE_Volume_Value), (int8_t)contrast);	// save contrast value
   if (xcol == 0) {
+#ifdef LCD_ICON_COLOR
+     eeprom_write_byte((uint8_t *)(&EE_FG_COLOR1), (int8_t)lcd_fg2_color.b[0]);
+     eeprom_write_byte((uint8_t *)(&EE_FG_COLOR2), (int8_t)lcd_fg2_color.b[1]);
+#else
      eeprom_write_byte((uint8_t *)(&EE_FG_COLOR1), (int8_t)lcd_fg_color.b[0]);
      eeprom_write_byte((uint8_t *)(&EE_FG_COLOR2), (int8_t)lcd_fg_color.b[1]);
+#endif
   } else {
      eeprom_write_byte((uint8_t *)(&EE_BG_COLOR1), (int8_t)lcd_bg_color.b[0]);
      eeprom_write_byte((uint8_t *)(&EE_BG_COLOR2), (int8_t)lcd_bg_color.b[1]);
@@ -910,5 +995,55 @@ int8_t korr;
   } /* end for times */
 
   eeprom_write_byte((uint8_t *)(&big_cap_corr), (int8_t)korr);	// save korr value
-}
+}	/* end set_big_cap_corr() */
+ #if defined(WITH_FREQUENCY_DIVIDER) && !defined(NO_FREQ_COUNTER)
+ /* *************************************************** */
+ /* set the scaler value for frequency measurement      */
+ /* *************************************************** */
+void setFScaler(void) {
+uint8_t key_pressed;
+uint8_t korr;
+  // set the contrast value
+  message_key_released(FScaler_str);	// display freq-scaler and wait for key released
+  korr = eeprom_read_byte((uint8_t *)&f_scaler);
+  #ifdef POWER_OFF
+  uint8_t times;
+  for (times=0;times<240;)
+  #else
+  while (1)                     /* wait endless without option POWER_OFF */
+  #endif
+  {
+     lcd_line2();
+     DisplayValue16(1<<korr,0,' ',3);
+     lcd_clear_line();		// clear to end of line
+     key_pressed = wait_for_key_ms(1600);
+  #ifdef POWER_OFF
+   #ifdef WITH_ROTARY_SWITCH
+     if ((key_pressed != 0) || (rotary.incre > 0)) times = 0;	// reset counter, operator is active
+   #else
+     if (key_pressed != 0)  times = 0;	// reset counter, operator is active
+   #endif
+  #endif
+     if(key_pressed >= 130) break;	// more than 1.3 seconds
+  #ifdef WITH_ROTARY_SWITCH
+     if (rotary.incre > FAST_ROTATION) break;		// fast rotation ends setting of korr
+     korr += rotary.count;		// increase or decrease korr by rotary.count
+  #endif
+     if (key_pressed > 0) {
+        if (key_pressed > 40) {
+           korr += 1;	// longer key press increases the scaler by factor 2
+        } else {
+           korr -= 1;	// decrease the scaler by factor 2
+        }
+     }
+     if (korr > 128) korr = 9;	// wrap around to 1<<korr = 512
+     if (korr > 9)	korr = 0;	// wrap around to 1<<korr = 1
+  #ifdef POWER_OFF
+     times = Pwr_mode_check(times);	// no time limit with DC_Pwr_mode
+  #endif
+  } /* end for times */
+
+  eeprom_write_byte((uint8_t *)(&f_scaler), (int8_t)korr);	// save korr value
+}	/* end setFScaler() */
+ #endif
 #endif  /* WITH_MENU */

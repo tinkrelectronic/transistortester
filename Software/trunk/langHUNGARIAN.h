@@ -1,5 +1,5 @@
 #if defined(LANG_HUNGARIAN)     //HUNGARIAN
-   const unsigned char TestRunning[] MEM_TEXT = "Meres..."; 
+   const unsigned char TestRunning[] MEM_TEXT = "Meres."; 
    const unsigned char BatWeak[] MEM_TEXT = "gyenge"; 
    const unsigned char BatEmpty[] MEM_TEXT = "ures!"; 
    const unsigned char TestFailed2[] MEM_TEXT = "hibas "; 
@@ -9,7 +9,7 @@
    const unsigned char Thyristor[] MEM_TEXT = "Tiriszt.";
    const unsigned char Unknown[] MEM_TEXT = " unknown"; // " ismeretlen"
    const unsigned char TestFailed1[] MEM_TEXT = "hibas vagy"; 
-   const unsigned char OrBroken[] MEM_TEXT = "nincs alkatresz ";
+   const unsigned char Detected[] MEM_TEXT = " erzekeli";
    const unsigned char TestTimedOut[] MEM_TEXT = "Idotullepes!";
 
    #define Cathode_char 'C'
@@ -21,7 +21,12 @@
  #ifdef WITH_MENU
    const unsigned char SELECTION_str[] MEM2_TEXT = "Valasztas:";
    const unsigned char TESTER_str[] MEM2_TEXT = "Tranzisztor";
+  #ifndef NO_FREQ_COUNTER
    const unsigned char FREQ_str[] MEM2_TEXT = "Frekvencia";
+ #ifdef WITH_FREQUENCY_DIVIDER
+   const unsigned char FScaler_str[] MEM2_TEXT = "F-Scaler";
+ #endif
+  #endif
    const unsigned char VOLTAGE_str[] MEM2_TEXT = "Voltage";
    const unsigned char SHOW_str[] MEM2_TEXT = "adatokat mutat";	// "Show data"
    const unsigned char OFF_str[] MEM2_TEXT = "kikapcsol";

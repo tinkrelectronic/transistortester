@@ -238,7 +238,7 @@ DisplayValue(ResistorVal[0],-1,LCD_CHAR_OMEGA,3);
 lcd_space();
 lcd_data('H');
 lcd_equal();			// lcd_data('=');
-ResistorVal[1] = ((ADCconfig.U_AVCC - adcmv[1]) * (unsigned long)R_L_VAL) / (adcmv[1] - adcmv[0]);
+ResistorVal[1] = (vcc_diff(adcmv[1]) * (unsigned long)R_L_VAL) / (adcmv[1] - adcmv[0]);
 DisplayValue(ResistorVal[1],-1,LCD_CHAR_OMEGA,3);
 lcd_line2();
 lcd_testpin(TP1);
@@ -251,7 +251,7 @@ adcmv[0] = W5msReadADC(TP1);
 ADCSRB = (1<<MUX5);		// switch to upper 8 MUX inputs
 adcmv[1] = ReadADC(PIN_RL1);
 ADCSRB = 0;			// switch back to lower 8 MUX inputs
-ResistorVal[1] = ((ADCconfig.U_AVCC - adcmv[0]) * (unsigned long)R_L_VAL) / (adcmv[0] - adcmv[1]);
+ResistorVal[1] = (vcc_diff(adcmv[0]) * (unsigned long)R_L_VAL) / (adcmv[0] - adcmv[1]);
 DisplayValue(ResistorVal[1],-1,LCD_CHAR_OMEGA,3);
 lcd_space();
 lcd_data('L');
@@ -279,7 +279,7 @@ DisplayValue(ResistorVal[0],-1,LCD_CHAR_OMEGA,3);
 lcd_space();
 lcd_data('H');
 lcd_equal();			// lcd_data('=');
-ResistorVal[1] = ((ADCconfig.U_AVCC - adcmv[1]) * (unsigned long)R_L_VAL) / (adcmv[1] - adcmv[0]);
+ResistorVal[1] = (vcc_diff(adcmv[1]) * (unsigned long)R_L_VAL) / (adcmv[1] - adcmv[0]);
 DisplayValue(ResistorVal[1],-1,LCD_CHAR_OMEGA,3);
 lcd_line2();
 lcd_testpin(TP2);
@@ -291,7 +291,7 @@ adcmv[0] = W5msReadADC(TP2);
 ADCSRB = (1<<MUX5);		// switch to upper 8 MUX inputs
 adcmv[1] = ReadADC(PIN_RL2);
 ADCSRB = 0;			// switch back to lower 8 MUX inputs
-ResistorVal[1] = ((ADCconfig.U_AVCC - adcmv[0]) * (unsigned long)R_L_VAL) / (adcmv[0] - adcmv[1]);
+ResistorVal[1] = (vcc_diff(adcmv[0]) * (unsigned long)R_L_VAL) / (adcmv[0] - adcmv[1]);
 DisplayValue(ResistorVal[1],-1,LCD_CHAR_OMEGA,3);
 lcd_space();
 lcd_data('L');
@@ -318,7 +318,7 @@ DisplayValue(ResistorVal[0],-1,LCD_CHAR_OMEGA,3);
 lcd_space();
 lcd_data('H');
 lcd_equal();			// lcd_data('=');
-ResistorVal[1] = ((ADCconfig.U_AVCC - adcmv[1]) * (unsigned long)R_L_VAL) / (adcmv[1] - adcmv[0]);
+ResistorVal[1] = (vcc_diff(adcmv[1]) * (unsigned long)R_L_VAL) / (adcmv[1] - adcmv[0]);
 DisplayValue(ResistorVal[1],-1,LCD_CHAR_OMEGA,3);
 lcd_line2();
 lcd_testpin(TP3);
@@ -330,7 +330,7 @@ adcmv[0] = W5msReadADC(TP3);
 ADCSRB = (1<<MUX5);		// switch to upper 8 MUX inputs
 adcmv[1] = ReadADC(PIN_RL3);
 ADCSRB = 0;			// switch back to lower 8 MUX inputs
-ResistorVal[1] = ((ADCconfig.U_AVCC - adcmv[0]) * (unsigned long)R_L_VAL) / (adcmv[0] - adcmv[1]);
+ResistorVal[1] = (vcc_diff(adcmv[0]) * (unsigned long)R_L_VAL) / (adcmv[0] - adcmv[1]);
 DisplayValue(ResistorVal[1],-1,LCD_CHAR_OMEGA,3);
 lcd_space();
 lcd_data('L');
@@ -427,16 +427,18 @@ if (((test_mode & 0x0f) == 1) || (UnCalibrated == 2))
 // for full test or first time calibration, use external capacitor
 // Message C > 100nF at TP1 and TP3
 cap_found = 0;
+#if (TPCAP <= 0)
+lcd_clear();
+lcd_testpin(TP1);
+lcd_MEM_string(CapZeich);	// "-||-"
+lcd_testpin(TP3);
+lcd_MEM2_string(MinCap_str);	// " >100nF!"
+#endif
 for (ww=0;ww<64;ww++) {
   init_parts();
   #if (TPCAP >= 0)
   CalibrationCap();	// measure with internal calibration capacitor
   #else
-  lcd_clear();
-  lcd_testpin(TP1);
-  lcd_MEM_string(CapZeich);	// "-||-"
-  lcd_testpin(TP3);
-  lcd_MEM2_string(MinCap_str); // " >100nF!"
   PartFound = PART_NONE;
   ReadCapacity(TP3, TP1);	// look for capacitor > 100nF
   #endif
@@ -533,6 +535,7 @@ for (ww=0;ww<64;ww++) {
   }  /* end if (cap_found > 4) */
   lcd_line2();
   DisplayValue(cap.cval,cap.cpre,'F',4);
+  lcd_clear_line();
   lcd_refresh();		// write the pixels to display, ST7920 only
   wait_about200ms();			// wait additional time
 } // end for ww
@@ -541,8 +544,8 @@ for (ww=0;ww<64;ww++) {
 
 ADCconfig.Samples = ANZ_MESS;	// set to configured number of ADC samples
 
-#ifdef SamplingADC
-  sampling_lc_calibrate();	// Cap for L-meas
+#if defined(SamplingADC) && !defined(AUTO_LC_CAP)
+  sampling_lc_calibrate(0);	// Cap for L-meas
 #endif
 
 

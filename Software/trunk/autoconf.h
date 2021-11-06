@@ -3,10 +3,10 @@
        Automatic Configuration
 */
 
-#if ((LCD_ST_TYPE == 7565) || (LCD_ST_TYPE == 1306) || (LCD_ST_TYPE == 7108) || (LCD_ST_TYPE == 7920) || (LCD_ST_TYPE == 7735) || (LCD_ST_TYPE == 9163) || (LCD_ST_TYPE == 9341))
+#if ((LCD_ST_TYPE == 7565) || (LCD_ST_TYPE == 1306) || (LCD_ST_TYPE == 7108) || (LCD_ST_TYPE == 7920) || (LCD_ST_TYPE == 7735) || (LCD_ST_TYPE == 9163) || (LCD_ST_TYPE == 9341) || (LCD_ST_TYPE == 1327))
 /* Define under which conditions a graphical display is supported. */
 /* The graphical display should support at least 128x64 pixels. */
- #if ((SCREEN_HEIGHT > 127) && (SCREEN_WIDTH > 255))
+ #if ((SCREEN_HEIGHT > 128) && (SCREEN_WIDTH > 255))
   #define ONE_B 16
  #else
   #define ONE_B 8
@@ -608,7 +608,7 @@
  // Only enabled for mega328, but you can also enable it for mega168, if you deselect other functions.
  // You can save about 250 bytes flash, if you deselect the WITH_UART option.
  #define SHOW_R_DS
- #if defined(NO_COMMON_EMITTER_HFE) && !defined(NO_TEST_T1_T7)
+ #if defined(NO_COMMON_EMITTER_HFE) && !defined(NO_TEST_T1_T7) && (FLASHEND < 0x3fff)
   #warning  Uf parameter of VAKDiode and ICE can not be shown with full selftest
  #else
   #define SHOW_VAKDIODE
@@ -742,6 +742,15 @@
         out     _SFR_IO_ADDR(\adr), \reg
      .else
         sts     \adr, \reg
+     .endif
+     .endm
+
+/* AIN input the specified IO-adr to reg */
+     .macro  AIN reg, adr
+     .if  _SFR_IO_REG_P(\adr)
+        in     \reg, _SFR_IO_ADDR(\adr)
+     .else
+        lds     \reg, \adr
      .endif
      .endm
  
